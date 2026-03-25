@@ -1,0 +1,702 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>สถานะห้องที่กำลังเช่า</title>
+  <script src="storage.js"></script>
+  <script src="date-format.js"></script>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    header {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 24px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-sizing: border-box;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #7b4a23;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    .back-btn span.arrow {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .back-btn:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #2b3a67;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    .print-btn:hover {
+      background: #1f2c50;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 8px 24px 40px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 18px 18px 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0d2c0;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #7b4a23;
+    }
+
+    .card p {
+      font-size: 13px;
+      margin: 4px 0 10px;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .print-meta {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #e4d6c4;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0e2d2;
+      font-weight: 600;
+    }
+
+    .status-paid { color: #1e8449; font-weight: 700; }
+    .status-partial { color: #e67e22; font-weight: 700; }
+    .status-unpaid { color: #c0392b; font-weight: 700; }
+
+    .month-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .month-item {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      background: #faf7f2;
+      font-size: 12px;
+    }
+
+    .month-item.debt {
+      border-color: #e74c3c;
+      background: #ffecec;
+    }
+
+    .month-item.ok {
+      border-color: #dcdcdc;
+      background: #faf7f2;
+    }
+
+    .month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .month-label {
+      font-weight: 700;
+      color: #2b3a67;
+    }
+
+    .month-detail {
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .overdue-tag {
+      font-size: 11px;
+      color: #c0392b;
+      border: 1px solid #c0392b;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 6px;
+      background: #fff;
+    }
+
+    .current-month-tag {
+      font-size: 11px;
+      color: #2b3a67;
+      border: 1px solid #2b3a67;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 6px;
+      background: #fff;
+    }
+
+    .room-total-debt {
+      font-size: 13px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .debt-text {
+      color: #c0392b;
+      font-weight: 700;
+    }
+
+    .no-debt-text {
+      color: #1e8449;
+      font-weight: 700;
+    }
+
+    .bill-text {
+      color: #2b3a67;
+      font-weight: 600;
+    }
+
+    .paid-text {
+      color: #1e8449;
+      font-weight: 600;
+    }
+
+    button {
+      padding: 6px 12px;
+      background: #a66a2b;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.22);
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 16px 16px 4px;
+        flex-wrap: wrap;
+      }
+
+      .page {
+        padding: 8px 16px 28px;
+      }
+
+      .card {
+        padding: 14px 14px 18px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 6px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .back-btn,
+      .print-btn,
+      button {
+        display: none !important;
+      }
+
+      header {
+        max-width: 100%;
+        margin: 0;
+        padding: 0 0 12px 0;
+      }
+
+      header h1 {
+        color: #000;
+        font-size: 20px;
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+
+      .print-meta {
+        display: block;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      th, td {
+        border: 1px solid #999;
+        padding: 6px;
+        color: #000;
+      }
+
+      th {
+        background: #eee !important;
+        color: #000;
+      }
+
+      .month-item {
+        border: 1px solid #bbb;
+        background: #fff !important;
+        break-inside: avoid;
+      }
+
+      .status-paid,
+      .status-partial,
+      .status-unpaid,
+      .debt-text,
+      .no-debt-text,
+      .bill-text,
+      .paid-text,
+      .month-label,
+      .month-detail {
+        color: #000 !important;
+      }
+
+      .overdue-tag,
+      .current-month-tag {
+        color: #000 !important;
+        border-color: #000 !important;
+        background: #fff !important;
+      }
+
+      tr, td, th {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="location.href='monthly_home.html'">
+    <span class="arrow">&larr;</span>
+    กลับหน้าแรก
+  </button>
+  <button class="print-btn" onclick="printStatusPage()">🖨️ พิมพ์</button>
+  <h1>สถานะห้องที่กำลังเช่า</h1>
+</header>
+
+<div class="page">
+  <div class="card">
+    <h2>ภาพรวมสถานะการชำระเงินของห้องที่กำลังเช่า</h2>
+    <p class="small">
+      ตารางด้านล่างแสดงสถานะของแต่ละห้องที่กำลังเช่าอยู่ ว่ามียอดค้างค่าเช่า / ค่าน้ำ / ค่าไฟ / ค่าใช้จ่ายอื่น ๆ
+      รวมถึงเงินประกันในเดือนแรกของสัญญา
+    </p>
+    <div class="print-meta" id="printMeta"></div>
+
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>ห้อง</th>
+          <th>ผู้เช่า</th>
+          <th>วันที่เริ่มเช่า</th>
+          <th>วันที่สิ้นสุดสัญญา</th>
+          <th>
+            สถานะรายเดือน<br>
+            <span style="font-size:11px;color:#666;">
+              (แยกค่าเช่า / เงินประกัน / ค่าน้ำ / ค่าไฟ / อื่น ๆ และยอดค้าง)
+            </span>
+          </th>
+          <th>ประวัติ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+<script>
+  const db = window.getSupabaseClient();
+
+  function computeContractEnd(startStr, duration) {
+    if (!startStr || !duration) return null;
+    const d = new Date(startStr + "T00:00:00");
+    if (isNaN(d.getTime())) return null;
+
+    const months = Number(duration);
+    if (Number.isNaN(months) || months <= 0) return null;
+
+    const _day = d.getDate(); d.setMonth(d.getMonth() + months); d.setDate(_day);
+    return d;
+  }
+
+  function goToHistory(room) {
+    window.location.href = "history.html?room=" + encodeURIComponent(room);
+  }
+
+  function printStatusPage() {
+    const now = new Date();
+    document.getElementById("printMeta").textContent =
+      "พิมพ์เมื่อ: " + formatDisplayDateTime(now);
+    window.print();
+  }
+
+  async function renderStatus() {
+    const tbody = document.querySelector("#statusTable tbody");
+    tbody.innerHTML = "";
+
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth() + 1;
+
+    try {
+      const [
+        { data: bookings, error: bookingErr },
+        { data: paymentsData, error: paymentErr },
+        { data: extraBillsData, error: billErr }
+      ] = await Promise.all([
+        db.from("bookings")
+          .select(`
+            id,
+            room_number,
+            tenant_name,
+            rent_type,
+            status,
+            checkin_date,
+            lease_duration,
+            monthly_rent,
+            deposit
+          `)
+          .eq("rent_type", "monthly")
+          .eq("status", "active"),
+
+        db.from("payments").select("*"),
+        db.from("extra_bills").select("*")
+      ]);
+
+      if (bookingErr) {
+        console.error("bookings error:", bookingErr);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6" style="color:red;">ไม่สามารถดึงข้อมูลห้องที่กำลังเช่าได้: ${bookingErr.message || ""}</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      const payments = paymentErr ? [] : (paymentsData || []);
+      if (paymentErr) console.error("payments error:", paymentErr);
+
+      const extraBills = billErr ? [] : (extraBillsData || []);
+      if (billErr) console.error("extra_bills error:", billErr);
+
+      if (!bookings || bookings.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6">ยังไม่มีห้องที่กำลังเช่าอยู่ในระบบ</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      bookings
+        .sort((a, b) => String(a.room_number || "").localeCompare(String(b.room_number || "")))
+        .forEach(bk => {
+          const roomNumber = bk.room_number || "";
+          const tenantName = bk.tenant_name || "";
+          const startDate = bk.checkin_date || "";
+          const leaseDuration = bk.lease_duration;
+          const rentBase = parseFloat(bk.monthly_rent || "0");
+          const deposit = parseFloat(bk.deposit || "0");
+
+          if (!roomNumber || !startDate || !leaseDuration || !rentBase || rentBase <= 0) {
+            return;
+          }
+
+          const end = computeContractEnd(startDate, leaseDuration);
+          if (!end) return;
+
+          const todayDate = new Date(today.getFullYear(), today.getMonth(), 1);
+          const endMonthDate = new Date(end.getFullYear(), end.getMonth(), 1);
+
+          if (today > end) return;
+
+          const months = [];
+          const parsedStart = new Date(startDate + "T00:00:00");
+          let cursor = new Date(parsedStart.getFullYear(), parsedStart.getMonth(), 1);
+
+          while (cursor <= endMonthDate && cursor <= todayDate) {
+            const y = cursor.getFullYear();
+            const m = cursor.getMonth() + 1;
+
+            let waterBill = 0;
+            let electricBill = 0;
+            let otherBill = 0;
+
+            extraBills.forEach(b => {
+              if (
+                b.room === roomNumber &&
+                Number(b.year) === y &&
+                Number(b.month) === m
+              ) {
+                waterBill += Number(b.water || b.water_bill || 0);
+                electricBill += Number(b.electricity || b.electric || b.electric_bill || 0);
+                otherBill += Number(b.other || b.other_bill || 0);
+              }
+            });
+
+            const isFirstMonth =
+              parsedStart.getFullYear() === y &&
+              parsedStart.getMonth() + 1 === m;
+
+            const depositForMonth = isFirstMonth ? deposit : 0;
+            const required = rentBase + depositForMonth + waterBill + electricBill + otherBill;
+
+            let paid = 0;
+            payments.forEach(p => {
+              if (
+                p.room_number === roomNumber &&
+                Number(p.year) === y &&
+                Number(p.month) === m
+              ) {
+                paid += Number(p.amount || 0);
+              }
+            });
+
+            const diff = required - paid;
+            let statusText = "";
+            let statusClass = "";
+
+            if (diff > 0 && paid === 0) {
+              statusText = "ยังไม่ชำระ";
+              statusClass = "status-unpaid";
+            } else if (diff > 0 && paid > 0) {
+              statusText = "จ่ายบางส่วน";
+              statusClass = "status-partial";
+            } else {
+              statusText = "ชำระแล้ว";
+              statusClass = "status-paid";
+            }
+
+            const isCurrent = (y === todayYear && m === todayMonth);
+            const isOverdue = diff > 0 && (y < todayYear || (y === todayYear && m < todayMonth));
+
+            let detailLine1 =
+              `ค่าเช่า ${rentBase.toFixed(2)} + น้ำ ${waterBill.toFixed(2)} + ไฟ ${electricBill.toFixed(2)} + อื่น ๆ ${otherBill.toFixed(2)}`;
+
+            if (depositForMonth > 0) {
+              detailLine1 += ` + เงินประกัน ${depositForMonth.toFixed(2)}`;
+            }
+
+            detailLine1 += ` = รวม ${required.toFixed(2)} บาท`;
+
+            const detailLine2 = `จ่ายแล้ว ${paid.toFixed(2)} บาท`;
+
+            let detailLine3 = "";
+            if (diff > 0) {
+              detailLine3 = `ค้างชำระ ${diff.toFixed(2)} บาท`;
+            } else if (diff < 0) {
+              detailLine3 = `ส่วนเกิน +${(-diff).toFixed(2)} บาท`;
+            } else {
+              detailLine3 = `ไม่มีค้างชำระ`;
+            }
+
+            months.push({
+              year: y,
+              month: m,
+              label: `${String(m).padStart(2, "0")}/${y}`,
+              required,
+              paid,
+              diff,
+              statusText,
+              statusClass,
+              detailLine1,
+              detailLine2,
+              detailLine3,
+              isCurrent,
+              isOverdue
+            });
+
+            cursor.setMonth(cursor.getMonth() + 1);
+          }
+
+          if (months.length === 0) return;
+
+          const debtMonths = months.filter(ms => ms.diff > 0);
+          const okMonths = months.filter(ms => ms.diff <= 0);
+          const orderedMonths = debtMonths.concat(okMonths);
+
+          const totalRequired = months.reduce((sum, ms) => sum + ms.required, 0);
+          const totalPaid = months.reduce((sum, ms) => sum + ms.paid, 0);
+          const totalDebt = debtMonths.reduce((sum, ms) => sum + ms.diff, 0);
+
+          const monthLines = orderedMonths.map(ms => {
+            const typeClass = ms.diff > 0 ? "debt" : "ok";
+            const overdueTag = ms.isOverdue && ms.diff > 0
+              ? `<span class="overdue-tag">ค้างเก่า</span>`
+              : "";
+            const currentTag = ms.isCurrent && ms.diff > 0
+              ? `<span class="current-month-tag">เดือนนี้</span>`
+              : "";
+
+            return `
+              <li class="month-item ${typeClass}">
+                <div class="month-header">
+                  <span class="month-label">${ms.label}</span>
+                  <span>
+                    <span class="${ms.statusClass}">${ms.statusText}</span>
+                    ${overdueTag}
+                    ${currentTag}
+                  </span>
+                </div>
+                <div class="month-detail">
+                  ${ms.detailLine1}<br>
+                  ${ms.detailLine2}<br>
+                  ${ms.detailLine3}
+                </div>
+              </li>
+            `;
+          }).join("");
+
+          const totalDebtText = totalDebt > 0
+            ? `<span class="debt-text">${totalDebt.toFixed(2)} บาท</span>`
+            : `<span class="no-debt-text">0.00 บาท</span>`;
+
+          const totalRequiredText = `<span class="bill-text">${totalRequired.toFixed(2)} บาท</span>`;
+          const totalPaidText = `<span class="paid-text">${totalPaid.toFixed(2)} บาท</span>`;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${roomNumber}</td>
+            <td>${tenantName || "-"}</td>
+            <td>${startDate}</td>
+            <td>${end.toISOString().split("T")[0]}</td>
+            <td>
+              <div class="room-total-debt">
+                ยอดตามบิลรวม: ${totalRequiredText}<br>
+                จ่ายแล้วรวม: ${totalPaidText}<br>
+                ยอดค้างรวมตอนนี้: ${totalDebtText}
+              </div>
+              <ul class="month-list">
+                ${monthLines}
+              </ul>
+            </td>
+            <td>
+              <button onclick="goToHistory('${roomNumber}')">ดูประวัติ</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      if (!tbody.hasChildNodes()) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6">ยังไม่มีข้อมูลห้องที่แสดงได้</td>`;
+        tbody.appendChild(tr);
+      }
+
+    } catch (e) {
+      console.error("renderStatus exception:", e);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" style="color:red;">เกิดข้อผิดพลาดขณะโหลดข้อมูลสถานะห้อง: ${e.message}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  renderStatus();
+</script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,1020 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>เช็คอินจาก Reservation</title>
+  <script src="date-format.js"></script>
+  <style>
+    body { font-family:"Prompt",Arial,sans-serif; margin:0; background:#f4eee7; color:#6b3b1c; }
+    .page { max-width:980px; margin:0 auto; padding:24px 24px 40px; box-sizing:border-box; }
+
+    .back-btn{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:10px 18px; background:#a66a2b; color:#fff;
+      border:none; border-radius:10px; font-size:15px; font-weight:800;
+      cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.15);
+      transition:background .15s, transform .15s, box-shadow .15s;
+    }
+    .back-btn:hover{ background:#905825; transform:translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,.18); }
+
+    .title{ text-align:center; margin:18px 0 18px; font-size:30px; font-weight:900; color:#7b4a23; }
+
+    .card{
+      background:#fff; border-radius:14px; padding:18px 18px 20px;
+      box-shadow:0 3px 8px rgba(0,0,0,.08); border:1px solid #e0d2c0; margin-bottom:18px;
+    }
+
+    h2{ margin:0 0 10px; color:#7b4a23; font-size:18px; border-bottom:1px solid #e7d8c6; padding-bottom:6px; }
+
+    label{ display:block; margin-top:10px; font-size:14px; color:#4e311a; font-weight:700; }
+    input, textarea, select{
+      width:100%; padding:9px 10px; margin-top:6px; box-sizing:border-box;
+      border-radius:10px; border:1px solid #ccbba7; font-size:14px; background:#fff; color:#4e311a;
+      outline:none;
+    }
+    input:focus, textarea:focus, select:focus{
+      border-color:#a66a2b; box-shadow:0 0 0 3px rgba(166,106,43,.15);
+    }
+
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .row > div{ flex:1 1 0; min-width:200px; }
+
+    button{
+      margin-top:18px; padding:10px 18px; background:#a66a2b; color:#fff;
+      border:none; border-radius:10px; font-size:15px; cursor:pointer; font-weight:900;
+      box-shadow:0 2px 4px rgba(0,0,0,.18);
+      transition:background .15s, transform .12s, box-shadow .15s;
+    }
+    button:hover{ background:#905825; transform:translateY(-1px); box-shadow:0 3px 6px rgba(0,0,0,.22); }
+
+    .sub-btn{
+      margin-top:10px; padding:9px 12px; background:#6c757d; border-radius:10px;
+      font-size:13px; border:none; cursor:pointer; color:#fff; font-weight:900;
+      box-shadow:0 2px 4px rgba(0,0,0,.18); white-space:nowrap;
+    }
+    .sub-btn:hover{ background:#565e64; }
+
+    .note{ font-size:12px; color:#7b6a57; margin-top:8px; line-height:1.35; }
+    .lock{
+      margin-top:8px; padding:10px 12px; border-radius:10px;
+      background:#eef7ff; color:#1f4d7a; font-size:13px; line-height:1.35;
+      border:1px solid rgba(31,77,122,.15);
+      font-weight:800;
+    }
+
+    table{
+      width:100%; border-collapse:collapse; margin-top:12px; font-size:13px; background:#fff;
+      border-radius:12px; overflow:hidden;
+    }
+    th, td{ border:1px solid #e4d6c4; padding:7px 8px; text-align:left; vertical-align:top; }
+    th{ background:#f0e2d2; }
+    .text-right{ text-align:right; }
+
+    .btn-small{
+      padding:5px 10px; font-size:12px; border-radius:10px; border:none;
+      cursor:pointer; background:#a66a2b; color:#fff; font-weight:900;
+      box-shadow:0 1px 3px rgba(0,0,0,.18);
+      margin:0;
+    }
+    .btn-small:hover{ background:#905825; }
+
+    .res-card{
+      margin-top:12px; background:#fff; border-radius:14px; padding:12px 14px;
+      box-shadow:0 2px 6px rgba(0,0,0,.08); border-left:6px solid #7b4a23; font-size:13px;
+    }
+    .res-card-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+    .res-card-title{ font-weight:900; color:#7b4a23; }
+    .res-card-tag{ font-size:12px; padding:3px 10px; border-radius:999px; background:#f1e3c5; color:#7b4a23; font-weight:900; }
+    .res-card-row{ display:flex; flex-wrap:wrap; gap:12px; margin-top:2px; }
+    .res-card-item{ min-width:160px; }
+    .res-label{ color:#8a7a68; font-size:11px; font-weight:800; }
+    .res-value{ font-size:13px; color:#4e311a; font-weight:800; }
+    .res-room-table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+    .res-room-table th, .res-room-table td{ border:1px solid #e4d6c4; padding:6px; }
+    .res-room-table th{ background:#f6ebdd; }
+
+    .locked{
+      background:#f3efe9 !important;
+      color:#6f5b49 !important;
+      border-color:#d7c6b4 !important;
+      cursor:not-allowed !important;
+    }
+
+    .warning-text{
+      color:red;
+      font-size:13px;
+      margin-top:10px;
+      font-weight:900;
+      white-space:pre-line;
+    }
+
+    .summary-box{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#fff7ed;
+      border:1px solid #ead5b7;
+      color:#7b4a23;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.45;
+    }
+
+    @media (max-width:700px){
+      .page{ padding:16px 14px 28px; }
+      .card{ padding:14px 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <button class="back-btn" id="backBtn">
+      <span class="arrow">&larr;</span> กลับหน้า Reservation List
+    </button>
+
+    <div class="title">เช็คอิน — จาก Reservation</div>
+
+    <div id="reservationInfoCard" class="res-card" style="display:none;">
+      <div class="res-card-header">
+        <div class="res-card-title">รายละเอียดการจอง</div>
+        <div class="res-card-tag">Reservation</div>
+      </div>
+      <div id="reservationInfoContent"></div>
+    </div>
+
+    <div class="card">
+      <h2>ข้อมูลจาก Reservation</h2>
+
+      <div class="lock">
+        หน้านี้แสดงรายละเอียด Reservation และให้เลือกห้องว่างเพื่อเช็คอินเท่านั้น<br>
+        สามารถเลือกห้องจริงและกรอกราคาจริงใหม่ตอนเช็คอินได้
+      </div>
+
+      <form id="checkinForm">
+        <input type="hidden" id="reservationId">
+        <input type="hidden" id="reservationCheckinDate">
+
+        <div class="row">
+          <div>
+            <label>ชื่อลูกค้า</label>
+            <input class="locked" type="text" id="guestName" disabled>
+          </div>
+          <div>
+            <label>หมายเลขโทรศัพท์</label>
+            <input class="locked" type="tel" id="phone" disabled>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>วันที่เช็คอิน</label>
+            <input class="locked" type="date" id="checkInDate" disabled>
+          </div>
+          <div>
+            <label>วันที่คาดว่าจะเช็คเอาท์</label>
+            <input class="locked" type="date" id="expectedCheckOut" disabled>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>รหัสการจอง</label>
+            <input class="locked" type="text" id="reservationCode" disabled>
+          </div>
+          <div>
+            <label>หมายเหตุการจอง</label>
+            <textarea class="locked" id="bookingNoteView" rows="2" disabled></textarea>
+          </div>
+        </div>
+
+        <h2>ข้อมูลเช็คอิน</h2>
+
+        <div class="row">
+          <div>
+            <label>ชื่อผู้เข้าพัก</label>
+            <input type="text" id="guestNameForCheckin" placeholder="ถ้าไม่กรอก ระบบจะใช้ชื่อลูกค้า">
+          </div>
+          <div>
+            <label>หมายเหตุเช็คอิน</label>
+            <textarea id="note" rows="2" placeholder="เช่น ขอห้องใกล้ลิฟต์"></textarea>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>จำนวนคืน</label>
+            <input class="locked" type="text" id="nightCountText" disabled>
+          </div>
+          <div>
+            <label>เวลาเช็คอินจริง</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="time" id="checkInTime" style="flex:1;" placeholder="HH:MM">
+              <button type="button" class="sub-btn" id="nowCheckinBtn">เวลาปัจจุบัน</button>
+            </div>
+            <div class="note">มาตรฐานเช็คอิน: 14:00 น. — กรอกเวลาจริงที่ลูกค้าเข้าพัก</div>
+          </div>
+        </div>
+
+        <h2>เลือกห้องว่างเพื่อเช็คอิน</h2>
+
+        <div class="row">
+          <div>
+            <label>เลขที่ห้อง *</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="text" id="roomNumberInput" placeholder="เช่น 201, 202" style="flex:1;">
+              <button type="button" class="sub-btn" id="chooseRoomBtn">เลือกจากแผนผังห้อง</button>
+            </div>
+            <div style="margin-top:6px;">
+              <div id="reservedPriceHint" class="note" style="background:#eef7ed; border:1px solid #b7ddc0; border-radius:8px; padding:4px 10px; color:#2f6b3e; font-weight:800; display:inline-block;">รายละเอียดการจอง: -</div>
+            </div>
+            <div class="note" style="margin-top:6px;">เลือกจาก room plan แล้วกลับมาหน้านี้ ข้อมูลที่กรอกไว้จะไม่หาย</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>ประเภทห้องจริง</label>
+            <input class="locked" type="text" id="roomTypeText" disabled>
+          </div>
+          <div>
+            <label>ราคาจริงต่อคืน / ห้อง *</label>
+            <input type="number" id="actualPriceInput" min="0" step="0.01" placeholder="เช่น 1200">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>ผู้เข้าพักห้องนี้</label>
+            <input type="text" id="roomGuestNameInput" placeholder="ถ้าเว้นไว้ จะใช้ชื่อลูกค้าหลัก">
+          </div>
+          <div>
+            <label>ราคารวมจริงของห้องนี้</label>
+            <input class="locked" type="text" id="actualTotalPreview" disabled>
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="display:flex;align-items:flex-end;">
+            <button type="button" class="sub-btn" id="addRoomBtn">+ เพิ่มห้องในรายการ</button>
+          </div>
+        </div>
+
+        <table id="roomTable" style="display:none; margin-top:10px;">
+          <thead>
+            <tr>
+              <th>ห้อง</th>
+              <th>ประเภทห้องจริง</th>
+              <th>ผู้เข้าพัก</th>
+              <th class="text-right">ราคาจริง/คืน</th>
+              <th class="text-right">ราคารวมจริง</th>
+              <th>ลบ</th>
+            </tr>
+          </thead>
+          <tbody id="roomTableBody"></tbody>
+        </table>
+
+        <div class="summary-box" id="priceSummaryBox" style="display:none;">
+          รวมทั้งหมด: <span id="sumRooms">0</span> ห้อง<br>
+          ราคารวมจริงทั้งหมด: <span id="sumActualTotal">0.00</span> บาท
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>ประเภทการชำระเงิน *</label>
+            <select id="paymentType">
+              <option value="">-- กรุณาเลือก --</option>
+              <option value="cash">เงินสด</option>
+              <option value="transfer">โอนเงิน</option>
+              <option value="card">บัตร</option>
+            </select>
+          </div>
+          <div>
+            <label>รายละเอียดการชำระเงิน</label>
+            <input type="text" id="paymentDetail" placeholder="เช่น ธนาคาร / เลขอ้างอิง / หมายเหตุการจ่าย">
+          </div>
+        </div>
+
+        <div id="warningMsg" class="warning-text"></div>
+
+        <button type="submit" id="submitBtn">บันทึกการเข้าพัก (เก็บเงินเลย)</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    let roomItems = [];
+    let roomTypeByRoom = {};
+    let roomStatusByRoom = {};
+    let roomsLoaded = false;
+
+    let derivedRoomType = "";
+    let lastPickedRoom = "";
+
+    const DRAFT_KEY_PREFIX = "daily_checkin_draft_";
+
+    function money(n){
+      return (Number(n) || 0).toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function calcNights(ci, co){
+      if(!ci || !co) return 0;
+      const a = new Date(ci + "T00:00:00");
+      const b = new Date(co + "T00:00:00");
+      const diff = b - a;
+      if (isNaN(diff) || diff < 0) return 0;
+      const days = Math.round(diff / (1000 * 60 * 60 * 24));
+      return days < 1 ? 1 : days;
+    }
+
+    function normalizeRoomNo(v){
+      return String(v || "").trim();
+    }
+
+    function normalizeRoomType(t){
+      const x = String(t || "").trim().toUpperCase();
+      if (x === "TWN") return "TWIN";
+      return x;
+    }
+
+    function showErr(msg){
+      document.getElementById("warningMsg").textContent = msg || "";
+    }
+
+    function getReservationIdFromUrl(){
+      return new URLSearchParams(location.search).get("reservation_id");
+    }
+
+    function getReservationIdResolved(){
+      return getReservationIdFromUrl() || sessionStorage.getItem("daily_checkin_reservation_id") || null;
+    }
+
+    function getDraftKey(){
+      const rid = getReservationIdResolved() || "unknown";
+      return DRAFT_KEY_PREFIX + rid;
+    }
+
+    function getNightCountCurrent(){
+      // Use today's actual check-in date for billing — not the reservation start date
+      // e.g. booking was yesterday→today but guest arrives today: 1 night, not 2
+      return calcNights(
+        document.getElementById("checkInDate").value,
+        document.getElementById("expectedCheckOut").value
+      );
+    }
+
+    function updatePricePreview(){
+      const nights = getNightCountCurrent();
+      const price = Number(document.getElementById("actualPriceInput").value || 0);
+      const total = nights > 0 ? price * nights : 0;
+      document.getElementById("actualTotalPreview").value = total > 0 ? money(total) + " บาท" : "";
+    }
+
+    function updateSummaryBox(){
+      const box = document.getElementById("priceSummaryBox");
+      const sumRooms = document.getElementById("sumRooms");
+      const sumActualTotal = document.getElementById("sumActualTotal");
+
+      if (!roomItems.length) {
+        box.style.display = "none";
+        sumRooms.textContent = "0";
+        sumActualTotal.textContent = "0.00";
+        return;
+      }
+
+      const totalRooms = roomItems.length;
+      const totalActual = roomItems.reduce((sum, it) => sum + (Number(it.actual_total_price) || 0), 0);
+
+      box.style.display = "block";
+      sumRooms.textContent = totalRooms;
+      sumActualTotal.textContent = money(totalActual);
+    }
+
+    function saveDraft(){
+      const draft = {
+        note: document.getElementById("note").value || "",
+        checkInTime: document.getElementById("checkInTime").value || "",
+        guestNameForCheckin: document.getElementById("guestNameForCheckin").value || "",
+        roomNumberInput: document.getElementById("roomNumberInput").value || "",
+        roomGuestNameInput: document.getElementById("roomGuestNameInput").value || "",
+        paymentType: document.getElementById("paymentType").value || "",
+        paymentDetail: document.getElementById("paymentDetail").value || "",
+        actualPriceInput: document.getElementById("actualPriceInput").value || "",
+        roomItems: roomItems,
+        derivedRoomType: derivedRoomType,
+        lastPickedRoom: lastPickedRoom
+      };
+      sessionStorage.setItem(getDraftKey(), JSON.stringify(draft));
+    }
+
+    function restoreDraft(){
+      const raw = sessionStorage.getItem(getDraftKey());
+      if(!raw) return;
+      try{
+        const d = JSON.parse(raw);
+        document.getElementById("note").value = d.note || "";
+        document.getElementById("checkInTime").value = d.checkInTime || "";
+        document.getElementById("guestNameForCheckin").value = d.guestNameForCheckin || "";
+        document.getElementById("roomNumberInput").value = d.roomNumberInput || "";
+        document.getElementById("roomGuestNameInput").value = d.roomGuestNameInput || "";
+        document.getElementById("paymentType").value = d.paymentType || "";
+        document.getElementById("paymentDetail").value = d.paymentDetail || "";
+        document.getElementById("actualPriceInput").value = d.actualPriceInput || "";
+        roomItems = Array.isArray(d.roomItems) ? d.roomItems : [];
+        derivedRoomType = d.derivedRoomType || "";
+        lastPickedRoom = d.lastPickedRoom || "";
+      }catch(e){}
+    }
+
+    function clearDraft(){
+      sessionStorage.removeItem(getDraftKey());
+    }
+
+    function openRoomPlan(){
+      const reservationId = getReservationIdResolved();
+      if(!reservationId){
+        alert("ไม่พบ reservation_id");
+        return;
+      }
+      saveDraft();
+      const returnTo = `daily_checkin.html?reservation_id=${encodeURIComponent(reservationId)}`;
+      location.href = `room_plan.html?return_to=${encodeURIComponent(returnTo)}&reservation_id=${encodeURIComponent(reservationId)}`;
+    }
+
+    async function loadRoomsMaster(){
+      try{
+        const { data, error } = await db
+          .from("rooms")
+          .select("room_number, room_type, status");
+
+        if(error){
+          roomsLoaded = false;
+          console.warn(error);
+          return;
+        }
+
+        roomTypeByRoom = {};
+        roomStatusByRoom = {};
+
+        (data || []).forEach(r => {
+          const rn = normalizeRoomNo(r.room_number);
+          if(!rn) return;
+          roomTypeByRoom[rn] = normalizeRoomType(r.room_type);
+          roomStatusByRoom[rn] = String(r.status || "").toLowerCase();
+        });
+
+        roomsLoaded = true;
+      }catch(e){
+        roomsLoaded = false;
+        console.warn(e);
+      }
+    }
+
+    function setRoomTypeText(type){
+      document.getElementById("roomTypeText").value = type || "";
+      derivedRoomType = type || "";
+    }
+
+    function applyDerivedRoomTypeFromRoomInput(showWarning = true){
+      if(showWarning) showErr("");
+
+      const roomNumber = normalizeRoomNo(document.getElementById("roomNumberInput").value);
+      if(!roomNumber){
+        setRoomTypeText("");
+        lastPickedRoom = "";
+        updatePricePreview();
+        return;
+      }
+
+      if(!roomsLoaded){
+        if(showWarning) showErr("ยังโหลดข้อมูลห้องไม่สำเร็จ");
+        setRoomTypeText("");
+        updatePricePreview();
+        return;
+      }
+
+      const roomType = roomTypeByRoom[roomNumber] || "";
+      if(!roomType){
+        if(showWarning) showErr(`ไม่พบข้อมูลห้อง ${roomNumber}`);
+        setRoomTypeText("");
+        updatePricePreview();
+        return;
+      }
+
+      lastPickedRoom = roomNumber;
+      setRoomTypeText(roomType);
+      updatePricePreview();
+      saveDraft();
+    }
+
+    function renderRoomTable(){
+      const table = document.getElementById("roomTable");
+      const tbody = document.getElementById("roomTableBody");
+
+      if(!roomItems.length){
+        table.style.display = "none";
+        tbody.innerHTML = "";
+        updateSummaryBox();
+        return;
+      }
+
+      table.style.display = "table";
+      tbody.innerHTML = "";
+
+      roomItems.forEach((it, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${it.room_number || ""}</td>
+          <td>${it.room_type || ""}</td>
+          <td>${it.guest_name || ""}</td>
+          <td class="text-right">${money(it.actual_price_per_night || 0)}</td>
+          <td class="text-right">${money(it.actual_total_price || 0)}</td>
+          <td><button type="button" class="btn-small" data-index="${idx}">ลบ</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateSummaryBox();
+      saveDraft();
+    }
+
+    async function isRoomVacant(roomNumber){
+      const rn = normalizeRoomNo(roomNumber);
+      if(!rn) return { ok:false, message:"ไม่พบเลขห้อง" };
+
+      const { data, error } = await db
+        .from("rooms")
+        .select("room_number, room_type, status")
+        .eq("room_number", rn)
+        .single();
+
+      if(error || !data){
+        return { ok:false, message:"ไม่พบข้อมูลห้องในตาราง rooms" };
+      }
+
+      const status = String(data.status || "").toLowerCase();
+      if(status !== "vacant"){
+        return { ok:false, message:`ห้อง ${rn} ไม่ว่าง (status: ${status})` };
+      }
+
+      return {
+        ok:true,
+        room_type: normalizeRoomType(data.room_type),
+        room_number: data.room_number
+      };
+    }
+
+    async function canUseRoomForThisReservation(roomNumber, reservationId) {
+      const rn = normalizeRoomNo(roomNumber);
+      if (!rn) {
+        return { ok: false, message: "กรุณาระบุเลขห้อง" };
+      }
+
+      // Look up room details
+      const { data: room, error: roomErr } = await db
+        .from("rooms")
+        .select("room_number, room_type, status")
+        .eq("room_number", rn)
+        .single();
+
+      if (roomErr || !room) {
+        return { ok: false, message: "ไม่พบข้อมูลห้องนี้" };
+      }
+
+      const roomType = normalizeRoomType(room.room_type);
+      const status = String(room.status || "").toLowerCase();
+
+      // Block rooms under maintenance
+      if (status === "maintenance") {
+        return { ok: false, message: `ห้อง ${rn} อยู่ระหว่างซ่อม` };
+      }
+
+      // Block rooms that are actively occupied by someone else
+      const { data: activeRoomUse, error: activeUseErr } = await db
+        .from("daily_checkins")
+        .select("id, reservation_id, room_number, is_active")
+        .eq("room_number", rn)
+        .eq("is_active", true);
+
+      if (activeUseErr) {
+        return { ok: false, message: "ตรวจสอบสถานะห้องจริงไม่สำเร็จ" };
+      }
+
+      if ((activeRoomUse || []).length > 0) {
+        return { ok: false, message: `ห้อง ${rn} มีผู้เข้าพักอยู่แล้ว` };
+      }
+
+      // Block rooms already added to this check-in list
+      if (roomItems.some(it => normalizeRoomNo(it.room_number) === rn)) {
+        return { ok: false, message: `ห้อง ${rn} ถูกเพิ่มในรายการแล้ว` };
+      }
+
+      // ✅ Allow any vacant room regardless of type or quantity —
+      // customer may change or add rooms at check-in time
+      return { ok: true, room_type: roomType };
+    }
+
+    async function loadReservationData(){
+      const reservationId = getReservationIdResolved();
+      if(!reservationId){
+        showErr("ไม่พบ reservation_id กรุณาเปิดหน้านี้จาก Reservation List");
+        return;
+      }
+
+      const { data, error } = await db
+        .from("reservations")
+        .select(`
+          id,
+          reservation_code,
+          customer_name,
+          customer_phone,
+          check_in_date,
+          check_out_date,
+          status,
+          note,
+          payment_type,
+          reservation_rooms (
+            room_number,
+            room_type,
+            room_count,
+            price_per_night,
+            deposit
+          )
+        `)
+        .eq("id", reservationId)
+        .single();
+
+      if(error || !data){
+        showErr("โหลดข้อมูล Reservation ไม่สำเร็จ: " + (error?.message || ""));
+        return;
+      }
+
+      document.getElementById("reservationId").value = data.id;
+      document.getElementById("reservationCode").value = data.reservation_code || "";
+      document.getElementById("guestName").value = data.customer_name || "";
+      document.getElementById("phone").value = data.customer_phone || "";
+      // Show today as the actual check-in date (not the reservation start date)
+      const todayForCheckin = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
+      document.getElementById("checkInDate").value = todayForCheckin;
+      // Store original reservation check-in date for night count calculation
+      document.getElementById("reservationCheckinDate").value = data.check_in_date || todayForCheckin;
+      document.getElementById("expectedCheckOut").value = data.check_out_date || "";
+      document.getElementById("bookingNoteView").value = data.note || "";
+      document.getElementById("paymentType").value = data.payment_type || "";
+      document.getElementById("nightCountText").value = getNightCountCurrent() + " คืน";
+
+      const card = document.getElementById("reservationInfoCard");
+      const content = document.getElementById("reservationInfoContent");
+      const nightsText = getNightCountCurrent(); // uses reservationCheckinDate
+
+      const reservedRoomNumbers = (data.reservation_rooms || [])
+        .map(r => String(r.room_number || "").trim())
+        .filter(Boolean);
+
+      const reservedRoomText = reservedRoomNumbers.length
+        ? reservedRoomNumbers.join(", ")
+        : "-";
+
+      const rows = (data.reservation_rooms || []).map(rr => `
+        <tr>
+          <td>${String(rr.room_number || "").trim() || "-"}</td>
+          <td>${normalizeRoomType(rr.room_type) || "-"}</td>
+          <td class="text-right">${rr.room_count || 1}</td>
+          <td class="text-right">${rr.price_per_night != null ? money(rr.price_per_night) : "-"}</td>
+        </tr>
+      `).join("");
+
+      content.innerHTML = `
+        <div class="res-card-row">
+          <div class="res-card-item"><div class="res-label">รหัสการจอง</div><div class="res-value">${data.reservation_code || data.id}</div></div>
+          <div class="res-card-item"><div class="res-label">ชื่อลูกค้า</div><div class="res-value">${data.customer_name || "-"}</div></div>
+          <div class="res-card-item"><div class="res-label">โทรศัพท์</div><div class="res-value">${data.customer_phone || "-"}</div></div>
+          <div class="res-card-item"><div class="res-label">สถานะ</div><div class="res-value">${data.status || "-"}</div></div>
+          <div class="res-card-item"><div class="res-label">Payment Type</div><div class="res-value">${data.payment_type || "-"}</div></div>
+          <div class="res-card-item"><div class="res-label">ห้องที่จองไว้</div><div class="res-value">${reservedRoomText}</div></div>
+        </div>
+        <div class="res-card-row" style="margin-top:6px;">
+          <div class="res-card-item">
+            <div class="res-label">ช่วงวันเข้าพัก</div>
+            <div class="res-value">${formatDisplayDate(data.check_in_date || "-")} → ${formatDisplayDate(data.check_out_date || "-")} (${nightsText} คืน)</div>
+          </div>
+        </div>
+        <div style="margin-top:10px; font-weight:900; color:#7b4a23;">ห้องและประเภทห้องที่จองไว้</div>
+        <table class="res-room-table">
+          <thead>
+            <tr>
+              <th>ห้องที่จองไว้</th>
+              <th>ประเภทห้อง</th>
+              <th class="text-right">จำนวนห้อง</th>
+              <th class="text-right">ราคาต่อคืน</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="4">-</td></tr>`}</tbody>
+        </table>
+      `;
+
+      const reservedPriceHint = document.getElementById("reservedPriceHint");
+      if (reservedPriceHint) {
+        const priceLines = (data.reservation_rooms || []).map(rr => {
+          const rn = String(rr.room_number || "").trim();
+          const rt = normalizeRoomType(rr.room_type);
+          const label = rn ? `${rn} (${rt})` : rt;
+          const price = rr.price_per_night != null ? money(rr.price_per_night) + " บาท/คืน" : "-";
+          return `${label}: ${price}`;
+        });
+        reservedPriceHint.textContent = "รายละเอียดการจอง: " + (priceLines.length ? priceLines.join(" | ") : "-");
+      }
+
+      if (reservedRoomNumbers.length && !document.getElementById("roomNumberInput").value.trim()) {
+        document.getElementById("roomNumberInput").value = reservedRoomNumbers[0];
+        lastPickedRoom = reservedRoomNumbers[0];
+
+        // Auto-fill reserved price for the first room
+        const firstRoom = data.reservation_rooms[0];
+        if (firstRoom && firstRoom.price_per_night != null) {
+          const priceInput = document.getElementById("actualPriceInput");
+          if (!priceInput.value) {
+            priceInput.value = firstRoom.price_per_night;
+          }
+        }
+      }
+
+      card.style.display = "block";
+      showErr("");
+      applyDerivedRoomTypeFromRoomInput(false);
+      updatePricePreview();
+      saveDraft();
+    }
+
+    function composeCheckinNote(note, paymentDetail) {
+      const cleanNote = String(note || "").trim();
+      const cleanPaymentDetail = String(paymentDetail || "").trim();
+      if (!cleanPaymentDetail) return cleanNote;
+      return cleanNote
+        ? `${cleanNote}\n[payment_detail] ${cleanPaymentDetail}`
+        : `[payment_detail] ${cleanPaymentDetail}`;
+    }
+
+    async function saveCheckinMultiSupabase({ group, paymentType, paymentDetail }){
+      showErr("");
+
+      const rows = roomItems.map(it => ({
+        reservation_id: group.reservationId,
+        room_number: String(it.room_number),
+        room_type: String(it.room_type || ""),
+        guest_name: String(it.guest_name || group.mainGuestName || ""),
+        check_in_at: (() => {
+          const t = document.getElementById("checkInTime").value || "";
+          const d = new Date();
+          if (t) { const [h,m] = t.split(":"); d.setHours(Number(h), Number(m), 0, 0); }
+          return d.toISOString();
+        })(),
+        is_active: true,
+        actual_price_per_night: Number(it.actual_price_per_night) || 0,
+        actual_total_price: Number(it.actual_total_price) || 0,
+        payment_type: String(paymentType || ""),
+        note: composeCheckinNote(group.note, paymentDetail)
+      }));
+
+      const ins = await db
+        .from("daily_checkins")
+        .insert(rows)
+        .select("id, room_number");
+
+      if (ins.error){
+        console.error(ins.error);
+        showErr("บันทึกเช็คอินไม่สำเร็จ: " + ins.error.message);
+        return false;
+      }
+
+      const roomNumbers = roomItems.map(x => String(x.room_number));
+      const upRooms = await db
+        .from("rooms")
+        .update({ status: "occupied" })
+        .in("room_number", roomNumbers);
+
+      if (upRooms.error){
+        console.warn(upRooms.error);
+        alert("เช็คอินสำเร็จ แต่ update rooms.status ไม่สำเร็จ: " + upRooms.error.message);
+      }
+
+      const actualTotalAllRooms = roomItems.reduce((sum, it) => sum + (Number(it.actual_total_price) || 0), 0);
+
+      const upRes = await db
+        .from("reservations")
+        .update({
+          status: "checked_in",
+          payment_type: paymentType,
+          total_rooms: roomItems.length,
+          total_price: actualTotalAllRooms
+        })
+        .eq("id", group.reservationId);
+
+      if (upRes.error){
+        console.warn(upRes.error);
+        alert("เช็คอินสำเร็จ แต่ update reservation.status / total_price ไม่สำเร็จ: " + upRes.error.message);
+      }
+
+      return true;
+    }
+
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      document.getElementById("backBtn").onclick = ()=> location.href = "reservation_list.html";
+      document.getElementById("chooseRoomBtn").onclick = openRoomPlan;
+
+      // Pre-fill check-in time with current time, wire up now button
+      const nowTime = () => { const d = new Date(); return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0"); };
+      document.getElementById("checkInTime").value = nowTime();
+      document.getElementById("nowCheckinBtn").addEventListener("click", () => {
+        document.getElementById("checkInTime").value = nowTime();
+        saveDraft();
+      });
+
+      restoreDraft();
+      await loadRoomsMaster();
+
+      const picked = sessionStorage.getItem("picked_room_number");
+      const pickedType = sessionStorage.getItem("picked_room_type");
+      const pickedRid = sessionStorage.getItem("picked_room_reservation_id");
+      const currentRid = String(getReservationIdResolved() || "");
+
+      if (picked && pickedType) {
+        if (pickedRid && currentRid && String(pickedRid) !== currentRid) {
+          sessionStorage.removeItem("picked_room_number");
+          sessionStorage.removeItem("picked_room_type");
+          sessionStorage.removeItem("picked_room_reservation_id");
+        } else {
+          document.getElementById("roomNumberInput").value = picked;
+          lastPickedRoom = String(picked);
+          setRoomTypeText(normalizeRoomType(String(pickedType).trim()));
+
+          sessionStorage.removeItem("picked_room_number");
+          sessionStorage.removeItem("picked_room_type");
+          sessionStorage.removeItem("picked_room_reservation_id");
+          saveDraft();
+        }
+      } else if (derivedRoomType) {
+        setRoomTypeText(derivedRoomType);
+      }
+
+      let tmr = null;
+      document.getElementById("roomNumberInput").addEventListener("input", ()=>{
+        if(tmr) clearTimeout(tmr);
+        tmr = setTimeout(()=>applyDerivedRoomTypeFromRoomInput(true), 200);
+        saveDraft();
+      });
+
+      document.getElementById("actualPriceInput").addEventListener("input", ()=>{
+        updatePricePreview();
+        saveDraft();
+      });
+
+      ["note","guestNameForCheckin","roomGuestNameInput","paymentType","paymentDetail"]
+        .forEach(id=>{
+          const el = document.getElementById(id);
+          if(el) el.addEventListener("input", saveDraft);
+          if(el) el.addEventListener("change", saveDraft);
+        });
+
+      await loadReservationData();
+      applyDerivedRoomTypeFromRoomInput(false);
+      updatePricePreview();
+      renderRoomTable();
+
+      document.getElementById("addRoomBtn").addEventListener("click", async ()=>{
+        showErr("");
+
+        const roomNumber = normalizeRoomNo(document.getElementById("roomNumberInput").value);
+        const guestName =
+          document.getElementById("roomGuestNameInput").value.trim() ||
+          document.getElementById("guestNameForCheckin").value.trim() ||
+          document.getElementById("guestName").value.trim();
+
+        const actualPrice = Number(document.getElementById("actualPriceInput").value || 0);
+        const nights = getNightCountCurrent();
+
+        if(!roomNumber){
+          showErr("กรุณากรอกเลขที่ห้อง");
+          return;
+        }
+
+        if(roomItems.some(it => it.room_number === roomNumber)){
+          showErr("ห้องนี้ถูกเพิ่มในรายการแล้ว");
+          return;
+        }
+
+        if(!actualPrice || actualPrice < 0){
+          showErr("กรุณากรอกราคาจริงต่อคืนให้ถูกต้อง");
+          return;
+        }
+
+        const reservationId = document.getElementById("reservationId").value;
+        const roomCheck = await canUseRoomForThisReservation(roomNumber, reservationId);
+
+        if (!roomCheck.ok) {
+          showErr(roomCheck.message);
+          return;
+        }
+
+        const roomType = roomCheck.room_type;
+
+        roomItems.push({
+          room_number: roomNumber,
+          room_type: roomType,
+          guest_name: guestName,
+          actual_price_per_night: actualPrice,
+          actual_total_price: actualPrice * nights
+        });
+
+        document.getElementById("roomNumberInput").value = "";
+        document.getElementById("roomGuestNameInput").value = "";
+        document.getElementById("actualPriceInput").value = "";
+        setRoomTypeText("");
+        lastPickedRoom = "";
+        updatePricePreview();
+
+        renderRoomTable();
+      });
+
+      document.getElementById("roomTableBody").addEventListener("click",(e)=>{
+        const btn = e.target.closest("button");
+        if(!btn) return;
+        const idx = btn.dataset.index;
+        if(idx == null) return;
+
+        roomItems.splice(Number(idx), 1);
+        renderRoomTable();
+      });
+
+      document.getElementById("checkinForm").addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        showErr("");
+
+        const reservationId = document.getElementById("reservationId").value;
+        const mainGuestName =
+          document.getElementById("guestNameForCheckin").value.trim() ||
+          document.getElementById("guestName").value.trim();
+        const paymentType = document.getElementById("paymentType").value;
+        const paymentDetail = document.getElementById("paymentDetail").value.trim();
+        const note = document.getElementById("note").value.trim();
+
+        if(!reservationId){
+          showErr("ไม่พบ reservation_id");
+          return;
+        }
+
+        if(!mainGuestName){
+          showErr("กรุณากรอกชื่อผู้เข้าพัก");
+          return;
+        }
+
+        if(!paymentType){
+          showErr("กรุณาเลือกประเภทการชำระเงิน");
+          return;
+        }
+
+        if(!roomItems.length){
+          showErr("กรุณาเพิ่มห้องอย่างน้อย 1 ห้อง");
+          return;
+        }
+
+        // Final check: make sure none of the rooms got occupied between adding and submitting
+        for(const it of roomItems){
+          const { data: activeUse } = await db
+            .from("daily_checkins")
+            .select("id")
+            .eq("room_number", String(it.room_number))
+            .eq("is_active", true);
+          if((activeUse || []).length > 0){
+            showErr(`ไม่สามารถเช็คอินได้: ห้อง ${it.room_number} มีผู้เข้าพักอยู่แล้ว`);
+            return;
+          }
+        }
+
+        const group = {
+          reservationId,
+          mainGuestName,
+          note
+        };
+
+        const ok = await saveCheckinMultiSupabase({ group, paymentType, paymentDetail });
+        if(!ok) return;
+
+        clearDraft();
+        alert("บันทึกเช็คอินสำเร็จ");
+        location.href = "reservation_list.html";
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,187 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เข้าสู่ระบบ</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    body{
+      font-family:"Prompt", Arial, sans-serif;
+      margin:0;
+      padding:0;
+      background:#f4eee7;
+      color:#6b3b1c;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+    }
+    .card{
+      background:#ffffff;
+      padding:28px 28px 32px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.12);
+      border:1px solid #e0d2c0;
+      width:340px;
+      max-width:90%;
+    }
+    h2{
+      margin-top:0;
+      margin-bottom:18px;
+      text-align:center;
+      color:#7b4a23;
+    }
+    label{
+      font-size:13px;
+      display:block;
+      margin-top:10px;
+    }
+    input{
+      width:100%;
+      padding:8px 10px;
+      margin-top:4px;
+      border-radius:6px;
+      border:1px solid #d6c4ad;
+      font-size:14px;
+      box-sizing:border-box;
+      background:#fff;
+    }
+    button{
+      width:100%;
+      margin-top:18px;
+      padding:10px;
+      background:#a66a2b;
+      color:white;
+      border:none;
+      border-radius:999px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 2px 4px rgba(0,0,0,0.18);
+    }
+    .message{
+      margin-top:12px;
+      font-size:13px;
+      text-align:center;
+      min-height:20px;
+      white-space:pre-line;
+    }
+    .logo{
+      text-align:center;
+      font-size:22px;
+      font-weight:700;
+      color:#7b4a23;
+      margin-bottom:10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Apartment System</div>
+  <h2>เข้าสู่ระบบ</h2>
+
+  <label>Email</label>
+  <input id="email" type="email" placeholder="example@email.com">
+
+  <label>Password</label>
+  <input id="password" type="password" placeholder="รหัสผ่าน">
+
+  <button type="button" id="loginBtn">เข้าสู่ระบบ</button>
+
+  <div class="message" id="message">กำลังเตรียมระบบ...</div>
+</div>
+
+<script>
+  
+
+  const message = document.getElementById("message");
+  const loginBtn = document.getElementById("loginBtn");
+
+  let sb = null;
+
+  function setMessage(text, color = "#6b3b1c") {
+    message.style.color = color;
+    message.textContent = text;
+  }
+
+  async function initSupabase() {
+    try {
+      setMessage("กำลังตรวจสอบการเชื่อมต่อ...");
+
+      if (!window.supabase) {
+        throw new Error("Supabase library โหลดไม่สำเร็จ");
+      }
+
+      sb = window.getSupabaseClient();
+
+      setMessage("กำลังทดสอบการเชื่อมต่อฐานข้อมูล...");
+
+      const { error } = await sb.from("rooms").select("*").limit(1);
+
+      if (error) {
+        console.error("Connection test error:", error);
+        setMessage("❌ เชื่อม Supabase ได้ แต่ query ตาราง rooms ไม่สำเร็จ\n" + error.message, "red");
+        return;
+      }
+
+      setMessage("✅ เชื่อมต่อ Supabase สำเร็จ", "green");
+    } catch (err) {
+      console.error("Init error:", err);
+      setMessage("❌ เริ่มต้นระบบไม่สำเร็จ\n" + err.message, "red");
+    }
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", login);
+
+  async function login() {
+    try {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        setMessage("❌ กรุณากรอก email และ password", "red");
+        return;
+      }
+
+      if (!sb) {
+        setMessage("❌ Supabase client ยังไม่พร้อม", "red");
+        return;
+      }
+
+      setMessage("กำลังเข้าสู่ระบบ...");
+
+      const { error } = await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error("Login error:", error);
+
+        if (error.message.includes("Invalid login credentials")) {
+          setMessage("❌ Email หรือ Password ไม่ถูกต้อง", "red");
+        } else {
+          setMessage("❌ " + error.message, "red");
+        }
+        return;
+      }
+
+      setMessage("✅ เข้าสู่ระบบสำเร็จ", "green");
+
+      setTimeout(() => {
+        location.href = "home.html";
+      }, 800);
+    } catch (err) {
+      console.error("Unexpected login error:", err);
+      setMessage("❌ เกิดข้อผิดพลาด\n" + err.message, "red");
+    }
+  }
+
+  initSupabase();
+</script>
+
+</body>
+</html>
+

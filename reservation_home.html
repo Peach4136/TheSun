@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบจองห้องพัก</title>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 24px 40px;
+    }
+
+       /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      transition: background 0.15s ease, transform 0.15s ease,
+                  box-shadow 0.15s ease;
+    }
+
+    .back-btn:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.18);
+    }
+
+    .title {
+      text-align: center;
+      margin-top: 26px;
+      margin-bottom: 26px;
+      font-size: 34px;
+      font-weight: 700;
+      color: #7b4a23;
+    }
+
+    /* GRID */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      justify-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .menu-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ปุ่มสไตล์เดียวกับหน้ารายเดือน */
+    .menu-btn {
+      width: min(90%, 90%);
+      max-width: 90vw;
+
+      padding: clamp(14px, 2.2vw, 18px);
+      font-size: clamp(14px, 2.4vw, 18px);
+
+      border-radius: 0;
+      border: 2px solid #655e44;
+
+      background: #ffffff;
+      color: #6b3b1c;
+      font-weight: 600;
+      cursor: pointer;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+
+      line-height: 1.3;
+      transition: transform 0.15s ease,
+                  box-shadow 0.15s ease,
+                  background 0.15s ease;
+    }
+
+    .menu-btn:hover {
+      transform: translateY(-1px);
+      background: #94724b;
+      color: #fff;
+      box-shadow: 0 4px 8px rgba(101, 92, 65, 0.35);
+    }
+
+    .menu-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- ปุ่มย้อนกลับ -->
+    <button class="back-btn" onclick="location.href='daily_home.html'">
+      <span class="arrow">&larr;</span>
+      กลับ
+    </button>
+
+    <div class="title">ระบบจองห้องพัก</div>
+    
+    <div class="menu-grid">
+      <button class="menu-btn" onclick="location.href='reservation_new.html'">
+        สร้างการจองใหม่
+      </button>
+      <button class="menu-btn" onclick="location.href='reservation_list.html'">
+        รายการจองทั้งหมด
+      </button>
+    
+  </div>
+</body>
+</html>
+

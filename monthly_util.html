@@ -1,0 +1,1040 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>บันทึกมิเตอร์น้ำ / ไฟ</title>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    header {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 24px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #7b4a23;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    .back-btn:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .back-btn span.arrow {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 8px 24px 40px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 18px 18px 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0d2c0;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #7b4a23;
+    }
+
+    .card p {
+      font-size: 13px;
+      margin: 4px 0 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="month"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 4px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #d6c4ad;
+      box-sizing: border-box;
+      background: #fff;
+      font-family: "Prompt", Arial, sans-serif;
+    }
+
+    input[readonly] {
+      background: #f7efe4;
+      color: #6b3b1c;
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 9px 18px;
+      background: #a66a2b;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.22);
+    }
+
+    .secondary-btn {
+      margin-top: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: #f0e2d2;
+      color: #6b3b1c;
+      box-shadow: none;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .secondary-btn:hover {
+      background: #e2d0bc;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+
+    .summary-box {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #fff7ed;
+      border: 1px solid #ead5b7;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px dashed #e1c89c;
+      padding: 5px 0;
+    }
+
+    .summary-line:last-child {
+      border-bottom: none;
+      font-weight: 800;
+      color: #2b3a67;
+    }
+
+    .msg {
+      margin-top: 8px;
+      font-size: 13px;
+      white-space: pre-line;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #e4d6c4;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0e2d2;
+      font-weight: 600;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 16px 16px 4px;
+        flex-wrap: wrap;
+      }
+      .page {
+        padding: 8px 16px 28px;
+      }
+      .card {
+        padding: 14px 14px 18px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      table {
+        font-size: 12px;
+      }
+      th, td {
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="back-btn" onclick="location.href='monthly_home.html'">
+      <span class="arrow">&larr;</span>
+      กลับหน้าแรก
+    </button>
+    <h1>บันทึกมิเตอร์น้ำ / ไฟ</h1>
+  </header>
+
+  <div class="page">
+    <div class="card">
+      <h2>บันทึกเลขมิเตอร์ประจำเดือน</h2>
+      <p class="small">
+        กรอก <strong>เลขมิเตอร์น้ำปัจจุบัน</strong> และ <strong>เลขมิเตอร์ไฟปัจจุบัน</strong><br>
+        ระบบจะดึงเลขเดือนก่อนมาให้เอง แล้วคำนวณหน่วยที่ใช้และยอดเงินอัตโนมัติ
+      </p>
+
+      <div class="grid">
+        <div>
+          <label>ห้อง (เฉพาะห้องที่กำลังเช่าอยู่)</label>
+          <select id="room" onchange="updateRentalIdLink()">
+            <option value="">-- เลือกห้อง --</option>
+          </select>
+          <div id="rentalIdLink" style="margin-top:6px; font-size:12px;"></div>
+        </div>
+
+        <div>
+          <label>วันที่</label>
+          <input type="date" id="readDate">
+        </div>
+
+        <div>
+          <label>เลขมิเตอร์น้ำครั้งก่อน</label>
+          <input type="number" id="prevWater" readonly>
+        </div>
+
+        <div>
+          <label>เลขมิเตอร์ไฟครั้งก่อน</label>
+          <input type="number" id="prevElectric" readonly>
+        </div>
+
+        <div>
+          <label>เลขมิเตอร์น้ำปัจจุบัน</label>
+          <input type="number" id="currWater" min="0" step="0.01">
+        </div>
+
+        <div>
+          <label>เลขมิเตอร์ไฟปัจจุบัน</label>
+          <input type="number" id="currElectric" min="0" step="0.01">
+        </div>
+
+        <div>
+          <label>ค่าน้ำต่อหน่วย</label>
+          <input type="number" id="waterRate" readonly>
+        </div>
+
+        <div>
+          <label>ค่าไฟต่อหน่วย</label>
+          <input type="number" id="electricRate" readonly>
+        </div>
+
+        <div class="full">
+          <label>หมายเหตุ</label>
+          <textarea id="note" placeholder="ถ้ามีหมายเหตุเพิ่มเติม"></textarea>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-line">
+          <span>หน่วยน้ำที่ใช้</span>
+          <span id="waterUnitsText">0.00</span>
+        </div>
+        <div class="summary-line">
+          <span>ค่าน้ำ</span>
+          <span id="waterAmountText">0.00 บาท</span>
+        </div>
+        <div class="summary-line">
+          <span>หน่วยไฟที่ใช้</span>
+          <span id="electricUnitsText">0.00</span>
+        </div>
+        <div class="summary-line">
+          <span>ค่าไฟ</span>
+          <span id="electricAmountText">0.00 บาท</span>
+        </div>
+        <div class="summary-line">
+          <span>รวมทั้งหมด</span>
+          <span id="totalAmountText">0.00 บาท</span>
+        </div>
+      </div>
+
+      <div class="summary-box" id="cumulativeBox" style="margin-top:10px; border:1.5px solid #a66a2b; display:none;">
+        <div style="font-weight:700; color:#7b4a23; margin-bottom:6px;">ยอดสะสมรอบนี้ (ตั้งแต่ <span id="periodStartText">-</span>)</div>
+        <div class="summary-line">
+          <span>ค่าน้ำสะสม</span>
+          <span id="cumWaterText">0.00 บาท</span>
+        </div>
+        <div class="summary-line">
+          <span>ค่าไฟสะสม</span>
+          <span id="cumElectricText">0.00 บาท</span>
+        </div>
+        <div class="summary-line">
+          <span>รวมสะสม</span>
+          <span id="cumTotalText">0.00 บาท</span>
+        </div>
+        <div style="font-size:11px; color:#888; margin-top:4px;">อ่านล่าสุด: <span id="lastReadDateText">-</span></div>
+      </div>
+
+      <button onclick="saveUtilityReading()">บันทึกมิเตอร์</button>
+      <p id="message" class="msg" style="color: green;"></p>
+    </div>
+
+    <div class="card" id="historyCard" style="display:none;">
+      <h2>ประวัติการบันทึกมิเตอร์ <span id="historyRoomLabel" style="font-size:14px; color:#a66a2b;"></span></h2>
+      <p class="small">แสดง 30 รายการล่าสุดย้อนหลังจากวันที่เลือก</p>
+
+      <div style="margin-bottom:16px;">
+        <canvas id="usageChart" height="100"></canvas>
+      </div>
+
+      <table id="readingTable">
+        <thead>
+          <tr>
+            <th>วันที่อ่าน</th>
+            <th>น้ำ (ก่อน → หลัง)</th>
+            <th>ไฟ (ก่อน → หลัง)</th>
+            <th class="text-right">ค่าน้ำ</th>
+            <th class="text-right">ค่าไฟ</th>
+            <th class="text-right">รวม</th>
+            <th>หมายเหตุ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    let activeBookings = [];
+    let usageChartInstance = null;
+    let currentSettings = {
+      water_rate: 0,
+      electric_rate: 0
+    };
+
+    function fmt(num) {
+      return (Number(num) || 0).toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function getSelectedDate() {
+      const v = document.getElementById("readDate").value;
+      if (!v) return null;
+      const d = new Date(v + "T00:00:00");
+      if (isNaN(d.getTime())) return null;
+      return { year: d.getFullYear(), month: d.getMonth() + 1, dateStr: v };
+    }
+
+    
+    function todayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+function setDefaultReadDate() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      document.getElementById("readDate").value = `${y}-${m}-${d}`;
+    }
+
+    // Get the billing period start date for a booking on a given date
+    // e.g. checkin Mar 2, reading on Apr 10 → period start is Apr 2
+    function getBillingPeriodStart(checkinDateStr, readDateStr) {
+      if (!checkinDateStr || !readDateStr) return checkinDateStr;
+      const ci = new Date(checkinDateStr + "T00:00:00");
+      const rd = new Date(readDateStr + "T00:00:00");
+      const ciDay = ci.getDate();
+      // Find the most recent anniversary of the checkin day
+      let periodStart = new Date(rd.getFullYear(), rd.getMonth(), ciDay);
+      if (periodStart > rd) {
+        periodStart.setMonth(periodStart.getMonth() - 1);
+      }
+      const y = periodStart.getFullYear();
+      const m = String(periodStart.getMonth() + 1).padStart(2, "0");
+      const d = String(periodStart.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function updateSummaryPreview() {
+      const prevWater = Number(document.getElementById("prevWater").value || 0);
+      const prevElectric = Number(document.getElementById("prevElectric").value || 0);
+      const currWater = Number(document.getElementById("currWater").value || 0);
+      const currElectric = Number(document.getElementById("currElectric").value || 0);
+
+      const waterRate = Number(document.getElementById("waterRate").value || 0);
+      const electricRate = Number(document.getElementById("electricRate").value || 0);
+
+      const wMax = currentSettings.water_meter_max || 9999.9;
+      const eMax = currentSettings.electric_meter_max || 9999.9;
+      const waterUnits = currWater >= prevWater
+        ? Math.round((currWater - prevWater) * 10) / 10
+        : Math.round(((wMax - prevWater) + currWater + 0.1) * 10) / 10;
+      const electricUnits = currElectric >= prevElectric
+        ? Math.round((currElectric - prevElectric) * 10) / 10
+        : Math.round(((eMax - prevElectric) + currElectric + 0.1) * 10) / 10;
+
+      const waterAmount = waterUnits * waterRate;
+      const electricAmount = electricUnits * electricRate;
+      const totalAmount = waterAmount + electricAmount;
+
+      document.getElementById("waterUnitsText").textContent = fmt(waterUnits);
+      document.getElementById("waterAmountText").textContent = `${fmt(waterAmount)} บาท`;
+      document.getElementById("electricUnitsText").textContent = fmt(electricUnits);
+      document.getElementById("electricAmountText").textContent = `${fmt(electricAmount)} บาท`;
+      document.getElementById("totalAmountText").textContent = `${fmt(totalAmount)} บาท`;
+
+      return {
+        waterUnits,
+        electricUnits,
+        waterAmount,
+        electricAmount,
+        totalAmount
+      };
+    }
+
+    function updateRentalIdLink() {
+      const roomNumber = document.getElementById("room").value;
+      const el = document.getElementById("rentalIdLink");
+      if (!roomNumber) { el.innerHTML = ""; return; }
+      const booking = activeBookings.find(x => String(x.room_number) === String(roomNumber));
+      if (!booking) { el.innerHTML = ""; return; }
+      el.innerHTML = `Rental ID: <a href="history.html?room=${encodeURIComponent(roomNumber)}&booking_id=${booking.id}" style="color:#7b4a23; font-weight:700;">#${String(booking.id).padStart(6,"0")}</a>`;
+    }
+
+    async function loadSettings() {
+      const { data, error } = await db
+        .from("utility_settings")
+        .select("*")
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        currentSettings = { water_rate: 0, electric_rate: 0 };
+      } else {
+        currentSettings = {
+          water_rate: Number(data.water_rate || 0),
+          electric_rate: Number(data.electric_rate || 0)
+        };
+      }
+
+      document.getElementById("waterRate").value = currentSettings.water_rate;
+      document.getElementById("electricRate").value = currentSettings.electric_rate;
+      updateSummaryPreview();
+    }
+
+    async function loadActiveRooms() {
+      const select = document.getElementById("room");
+      select.innerHTML = '<option value="">-- เลือกห้อง --</option>';
+      activeBookings = [];
+
+      const [roomsRes, bookingsRes] = await Promise.all([
+        db.from("rooms").select("room_number, room_type, status").order("room_number", { ascending: true }),
+        db.from("bookings").select("id, room_number, tenant_name, rent_type, status, checkin_date")
+          .eq("rent_type", "monthly").eq("status", "active")
+      ]);
+
+      activeBookings = bookingsRes.data || [];
+      const bookingByRoom = {};
+      activeBookings.forEach(bk => { bookingByRoom[String(bk.room_number)] = bk; });
+
+      (roomsRes.data || []).forEach(room => {
+        const rn = String(room.room_number || "");
+        const bk = bookingByRoom[rn];
+        const opt = document.createElement("option");
+        opt.value = rn;  // use room_number as value
+        opt.textContent = bk
+          ? `${rn} - ${bk.tenant_name || "-"} (กำลังเช่า)`
+          : `${rn} - ว่าง`;
+        select.appendChild(opt);
+      });
+    }
+
+    async function loadPreviousMeterReading() {
+      const roomNumber = document.getElementById("room").value;
+      const sel = getSelectedDate();
+
+      document.getElementById("prevWater").value = "";
+      document.getElementById("prevElectric").value = "";
+      document.getElementById("cumulativeBox").style.display = "none";
+
+      if (!roomNumber || !sel) { updateSummaryPreview(); return; }
+
+      const booking = activeBookings.find(x => String(x.room_number) === String(roomNumber));
+
+      // Get all readings for this room
+      const { data, error } = await db
+        .from("utility_readings")
+        .select("*")
+        .eq("room_number", roomNumber)
+        .order("read_date", { ascending: false });
+
+      if (error) { console.error(error); updateSummaryPreview(); return; }
+
+      const readings = (data || []).filter(r => r.read_date);
+
+      // Most recent reading BEFORE today = previous meter value
+      const prev = readings.find(r => r.read_date < sel.dateStr);
+      if (prev) {
+        document.getElementById("prevWater").value = Number(prev.curr_water_meter || 0);
+        document.getElementById("prevElectric").value = Number(prev.curr_electric_meter || 0);
+      } else {
+        document.getElementById("prevWater").value = 0;
+        document.getElementById("prevElectric").value = 0;
+      }
+
+      updateSummaryPreview();
+
+      // Cumulative: sum all readings in the current billing period
+      const checkinDate = booking ? (booking.checkin_date || sel.dateStr) : sel.dateStr;
+      const periodStart = getBillingPeriodStart(checkinDate, sel.dateStr);
+      const periodReadings = readings.filter(r => r.read_date >= periodStart && r.read_date <= sel.dateStr);
+
+      const cumWater = periodReadings.reduce((s, r) => s + Number(r.water_amount || 0), 0);
+      const cumElectric = periodReadings.reduce((s, r) => s + Number(r.electric_amount || 0), 0);
+      const lastRead = periodReadings.length > 0 ? periodReadings[0].read_date : "-";
+
+      document.getElementById("periodStartText").textContent = periodStart;
+      document.getElementById("cumWaterText").textContent = fmt(cumWater) + " บาท";
+      document.getElementById("cumElectricText").textContent = fmt(cumElectric) + " บาท";
+      document.getElementById("cumTotalText").textContent = fmt(cumWater + cumElectric) + " บาท";
+      document.getElementById("lastReadDateText").textContent = lastRead;
+      document.getElementById("cumulativeBox").style.display = "block";
+    }
+
+    async function saveUtilityReading() {
+      const msg = document.getElementById("message");
+      msg.textContent = "";
+      msg.style.color = "green";
+
+      const roomNumber = String(document.getElementById("room").value || "").trim();
+      const sel = getSelectedDate();
+      const note = document.getElementById("note").value.trim();
+
+      if (!roomNumber) {
+        msg.style.color = "red";
+        msg.textContent = "กรุณาเลือกห้อง";
+        return;
+      }
+
+      if (!sel) {
+        msg.style.color = "red";
+        msg.textContent = "กรุณาเลือกวันที่อ่านมิเตอร์";
+        return;
+      }
+
+      // booking_id not stored in utility_readings — linked via room_number
+
+      const prevWater = Number(document.getElementById("prevWater").value || 0);
+      const prevElectric = Number(document.getElementById("prevElectric").value || 0);
+      const currWater = Number(document.getElementById("currWater").value || 0);
+      const currElectric = Number(document.getElementById("currElectric").value || 0);
+
+      // Allow curr < prev — meter may have rolled over (e.g. 9999 → 0)
+      // Show warning but don't block — rollover is handled in calcUnitsWithRollover
+      const warnings = [];
+      if (currWater < prevWater) {
+        const wMax = currentSettings.water_meter_max || 9999.9;
+        const units = Math.round(((wMax - prevWater) + currWater + 0.1) * 10) / 10;
+        warnings.push(`⚠ มิเตอร์น้ำวนกลับ: ${prevWater} → ${wMax} → ${currWater} = ใช้ ${units} หน่วย`);
+      }
+      if (currElectric < prevElectric) {
+        const eMax = currentSettings.electric_meter_max || 9999.9;
+        const units = Math.round(((eMax - prevElectric) + currElectric + 0.1) * 10) / 10;
+        warnings.push(`⚠ มิเตอร์ไฟวนกลับ: ${prevElectric} → ${eMax} → ${currElectric} = ใช้ ${units} หน่วย`);
+      }
+      if (warnings.length) {
+        msg.style.color = "orange";
+        msg.textContent = warnings.join(" | ") + " — กำลังบันทึก...";
+      }
+
+      const calc = updateSummaryPreview();
+
+      const payload = {
+        room_number: roomNumber,
+        read_date: sel.dateStr,
+
+        prev_water_meter: prevWater,
+        curr_water_meter: currWater,
+        water_units: calc.waterUnits,
+        water_rate: Number(currentSettings.water_rate || 0),
+        water_amount: calc.waterAmount,
+
+        prev_electric_meter: prevElectric,
+        curr_electric_meter: currElectric,
+        electric_units: calc.electricUnits,
+        electric_rate: Number(currentSettings.electric_rate || 0),
+        electric_amount: calc.electricAmount,
+
+        total_amount: calc.totalAmount,
+        note: note,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: existing, error: checkErr } = await db
+        .from("utility_readings")
+        .select("id")
+        .eq("room_number", roomNumber)
+        .eq("read_date", sel.dateStr)
+        .maybeSingle();
+
+      if (checkErr) {
+        msg.style.color = "red";
+        msg.textContent = "ตรวจสอบข้อมูลเดิมไม่สำเร็จ: " + checkErr.message;
+        return;
+      }
+
+      if (existing && existing.id) {
+        const { error: updErr } = await db
+          .from("utility_readings")
+          .update(payload)
+          .eq("id", existing.id);
+
+        if (updErr) {
+          msg.style.color = "red";
+          msg.textContent = "อัปเดตข้อมูลไม่สำเร็จ: " + updErr.message;
+          return;
+        }
+
+        msg.style.color = "green";
+        msg.textContent = "อัปเดตข้อมูลมิเตอร์เรียบร้อยแล้ว";
+      } else {
+        const { error: insErr } = await db
+          .from("utility_readings")
+          .insert({
+            ...payload,
+            created_at: new Date().toISOString()
+          });
+
+        if (insErr) {
+          msg.style.color = "red";
+          msg.textContent = "บันทึกข้อมูลไม่สำเร็จ: " + insErr.message;
+          return;
+        }
+
+        msg.style.color = "green";
+        msg.textContent = "บันทึกข้อมูลมิเตอร์เรียบร้อยแล้ว";
+      }
+
+      // Cascade: recalculate all subsequent readings for this room
+      await cascadeRecalcFromDate(roomNumber, sel.dateStr, msg);
+
+      await renderReadings();
+      await loadPreviousMeterReading();
+    }
+
+    async function cascadeRecalcFromDate(roomNumber, fromDate, msg) {
+      // Fetch all readings for this room in chronological order
+      const { data: allReadings, error } = await db
+        .from("utility_readings")
+        .select("*")
+        .eq("room_number", roomNumber)
+        .order("read_date", { ascending: true });
+
+      if (error || !allReadings) return;
+
+      const readings = allReadings.filter(r => r.read_date);
+      const startIdx = readings.findIndex(r => r.read_date >= fromDate);
+      if (startIdx === -1) return;
+
+      const wMax = currentSettings.water_meter_max || 9999.9;
+      const eMax = currentSettings.electric_meter_max || 9999.9;
+      const wRate = currentSettings.water_rate || 0;
+      const eRate = currentSettings.electric_rate || 0;
+
+      function calcRollover(prev, curr, max) {
+        if (curr >= prev) return Math.round((curr - prev) * 10) / 10;
+        return Math.round(((max - prev) + curr + 0.1) * 10) / 10; // step = 0.1 (1 decimal meter)
+      }
+
+      for (let i = startIdx; i < readings.length; i++) {
+        const row = readings[i];
+        const prevRow = i > 0 ? readings[i - 1] : null;
+
+        if (prevRow) {
+          row.prev_water_meter = prevRow.curr_water_meter;
+          row.prev_electric_meter = prevRow.curr_electric_meter;
+        }
+
+        row.water_units = calcRollover(row.prev_water_meter, row.curr_water_meter, wMax);
+        row.electric_units = calcRollover(row.prev_electric_meter, row.curr_electric_meter, eMax);
+        row.water_amount = Math.round(row.water_units * wRate * 100) / 100;
+        row.electric_amount = Math.round(row.electric_units * eRate * 100) / 100;
+        row.total_amount = Math.round((row.water_amount + row.electric_amount) * 100) / 100;
+        row.updated_at = new Date().toISOString();
+
+        await db.from("utility_readings").update({
+          prev_water_meter: row.prev_water_meter,
+          prev_electric_meter: row.prev_electric_meter,
+          water_units: row.water_units,
+          electric_units: row.electric_units,
+          water_amount: row.water_amount,
+          electric_amount: row.electric_amount,
+          total_amount: row.total_amount,
+          updated_at: row.updated_at
+        }).eq("id", row.id);
+      }
+
+      if (msg && readings.length - startIdx > 1) {
+        msg.textContent += ` (อัปเดต ${readings.length - startIdx} แถวต่อเนื่อง)`;
+      }
+    }
+
+    async function renderReadings() {
+      const roomEl = document.getElementById("room");
+      const roomNumber = roomEl.value.trim();
+      const roomLabel = roomEl.options[roomEl.selectedIndex]?.text || roomNumber;
+      const readDate = document.getElementById("readDate").value;
+      const tbody = document.querySelector("#readingTable tbody");
+      const historyCard = document.getElementById("historyCard");
+
+      if (!roomNumber) {
+        historyCard.style.display = "none";
+        return;
+      }
+
+      const effectiveDate = readDate || todayStr();
+      historyCard.style.display = "block";
+      document.getElementById("historyRoomLabel").textContent = `ห้อง ${roomLabel}`;
+      tbody.innerHTML = `<tr><td colspan="8">กำลังโหลด...</td></tr>`;
+
+      const { data, error } = await db
+        .from("utility_readings")
+        .select("*")
+        .eq("room_number", roomNumber)
+        .lte("read_date", effectiveDate)
+        .order("read_date", { ascending: false })
+        .limit(30);
+
+      if (error) {
+        tbody.innerHTML = `<td colspan="8" style="color:red;">โหลดประวัติไม่สำเร็จ: ${error.message}</td>`;
+        return;
+      }
+
+      const rows = data || [];
+
+      if (!rows.length) {
+        tbody.innerHTML = `<td colspan="8">ยังไม่มีข้อมูลสำหรับห้องนี้</td>`;
+        renderUsageChart([]);
+        return;
+      }
+
+      tbody.innerHTML = ""; // clear กำลังโหลด before appending rows
+      rows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.id = `row-${r.id}`;
+        tr.innerHTML = `
+          <td>${r.read_date || "-"}</td>
+          <td>
+            ${fmt(r.prev_water_meter)} → ${fmt(r.curr_water_meter)}
+            <div class="small">ใช้ ${fmt(r.water_units)} หน่วย</div>
+          </td>
+          <td>
+            ${fmt(r.prev_electric_meter)} → ${fmt(r.curr_electric_meter)}
+            <div class="small">ใช้ ${fmt(r.electric_units)} หน่วย</div>
+          </td>
+          <td class="text-right">${fmt(r.water_amount)} บาท</td>
+          <td class="text-right">${fmt(r.electric_amount)} บาท</td>
+          <td class="text-right">${fmt(r.total_amount)} บาท</td>
+          <td>${r.note || "-"}</td>
+          <td>
+            <button class="secondary-btn" style="margin-top:0;" onclick="showEditRow('${r.id}', ${r.curr_water_meter}, ${r.curr_electric_meter}, '${r.note || ""}')">แก้ไข</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Inline edit row (hidden by default)
+        const editTr = document.createElement("tr");
+        editTr.id = `edit-${r.id}`;
+        editTr.style.display = "none";
+        editTr.style.background = "#fffbf0";
+        editTr.innerHTML = `
+          <td colspan="2" style="font-size:12px; color:#7b4a23; font-weight:700;">แก้ไข ${r.read_date}</td>
+          <td>
+            <label style="font-size:11px;">มิเตอร์น้ำใหม่</label>
+            <input type="number" step="0.1" id="edit-water-${r.id}" value="${r.curr_water_meter}" style="width:100%; padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc;">
+          </td>
+          <td>
+            <label style="font-size:11px;">มิเตอร์ไฟใหม่</label>
+            <input type="number" step="0.1" id="edit-electric-${r.id}" value="${r.curr_electric_meter}" style="width:100%; padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc;">
+          </td>
+          <td colspan="3">
+            <label style="font-size:11px;">หมายเหตุ</label>
+            <input type="text" id="edit-note-${r.id}" value="${r.note || ""}" style="width:100%; padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc;">
+          </td>
+          <td></td>
+          <td>
+            <button class="secondary-btn" style="margin-top:0; background:#a66a2b; color:#fff;" onclick="saveEditRow('${r.id}', '${r.room_number}', '${r.read_date}')">บันทึก</button>
+            <button class="secondary-btn" style="margin-top:4px;" onclick="hideEditRow('${r.id}')">ยกเลิก</button>
+          </td>
+        `;
+        tbody.appendChild(editTr);
+      });
+
+      // Render chart in chronological order
+      renderUsageChart([...rows].reverse());
+    }
+
+    function renderUsageChart(rows) {
+      const canvas = document.getElementById("usageChart");
+      if (!canvas) return;
+      if (usageChartInstance) { usageChartInstance.destroy(); usageChartInstance = null; }
+      if (!rows.length) return;
+
+      const labels = rows.map(r => r.read_date || "-");
+      const waterData = rows.map(r => Number(r.water_units || 0));
+      const electricData = rows.map(r => Number(r.electric_units || 0));
+
+      usageChartInstance = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "น้ำ (หน่วย)",
+              data: waterData,
+              borderColor: "#2196f3",
+              backgroundColor: "rgba(33,150,243,0.1)",
+              tension: 0.3,
+              pointRadius: 4,
+              fill: true
+            },
+            {
+              label: "ไฟ (หน่วย)",
+              data: electricData,
+              borderColor: "#ff9800",
+              backgroundColor: "rgba(255,152,0,0.1)",
+              tension: 0.3,
+              pointRadius: 4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "top" },
+            title: { display: true, text: "การใช้น้ำและไฟรายวัน (หน่วย)" }
+          },
+          scales: {
+            x: { ticks: { maxRotation: 45, font: { size: 11 } } },
+            y: { beginAtZero: true, title: { display: true, text: "หน่วย" } }
+          }
+        }
+      });
+    }
+
+    function showEditRow(id, currWater, currElectric, note) {
+      document.getElementById(`edit-${id}`).style.display = "";
+    }
+
+    function hideEditRow(id) {
+      document.getElementById(`edit-${id}`).style.display = "none";
+    }
+
+    async function saveEditRow(id, roomNumber, readDate) {
+      const msg = document.getElementById("message");
+      msg.textContent = "กำลังบันทึกและคำนวณใหม่...";
+      msg.style.color = "#a66a2b";
+
+      const newCurrWater = Number(document.getElementById(`edit-water-${id}`).value || 0);
+      const newCurrElectric = Number(document.getElementById(`edit-electric-${id}`).value || 0);
+      const newNote = document.getElementById(`edit-note-${id}`).value.trim();
+
+      // Fetch ALL readings for this room in chronological order
+      const { data: allReadings, error: fetchErr } = await db
+        .from("utility_readings")
+        .select("*")
+        .eq("room_number", roomNumber)
+        .order("read_date", { ascending: true });
+
+      if (fetchErr) {
+        msg.style.color = "red";
+        msg.textContent = "โหลดข้อมูลไม่สำเร็จ: " + fetchErr.message;
+        return;
+      }
+
+      const readings = (allReadings || []).filter(r => r.read_date);
+      const targetIdx = readings.findIndex(r => String(r.id) === String(id));
+      if (targetIdx === -1) {
+        msg.style.color = "red";
+        msg.textContent = "ไม่พบรายการที่แก้ไข";
+        return;
+      }
+
+      // Update the target row's curr values
+      readings[targetIdx].curr_water_meter = newCurrWater;
+      readings[targetIdx].curr_electric_meter = newCurrElectric;
+      readings[targetIdx].note = newNote;
+
+      // Cascade: recalculate this row and all subsequent rows
+      const waterMax = currentSettings.water_meter_max || 9999.9;
+      const electricMax = currentSettings.electric_meter_max || 9999.9;
+      const waterRate = currentSettings.water_rate || 0;
+      const electricRate = currentSettings.electric_rate || 0;
+
+      function calcUnitsWithRollover(prev, curr, max) {
+        if (curr >= prev) return Math.round((curr - prev) * 10) / 10;
+        return Math.round(((max - prev) + curr + 0.1) * 10) / 10; // step = 0.1 (1 decimal meter) // 9999→0→1 = 2 units
+      }
+
+      for (let i = targetIdx; i < readings.length; i++) {
+        const row = readings[i];
+        // prev = curr of the row before, or 0 if first
+        const prevWater = i > 0 ? readings[i - 1].curr_water_meter : row.prev_water_meter;
+        const prevElectric = i > 0 ? readings[i - 1].curr_electric_meter : row.prev_electric_meter;
+
+        row.prev_water_meter = prevWater;
+        row.prev_electric_meter = prevElectric;
+        row.water_units = calcUnitsWithRollover(prevWater, row.curr_water_meter, waterMax);
+        row.electric_units = calcUnitsWithRollover(prevElectric, row.curr_electric_meter, electricMax);
+        row.water_amount = Math.round(row.water_units * waterRate * 100) / 100;
+        row.electric_amount = Math.round(row.electric_units * electricRate * 100) / 100;
+        row.total_amount = Math.round((row.water_amount + row.electric_amount) * 100) / 100;
+        row.updated_at = new Date().toISOString();
+
+        const { error: updErr } = await db
+          .from("utility_readings")
+          .update({
+            prev_water_meter: row.prev_water_meter,
+            curr_water_meter: row.curr_water_meter,
+            prev_electric_meter: row.prev_electric_meter,
+            curr_electric_meter: row.curr_electric_meter,
+            water_units: row.water_units,
+            electric_units: row.electric_units,
+            water_amount: row.water_amount,
+            electric_amount: row.electric_amount,
+            total_amount: row.total_amount,
+            note: i === targetIdx ? newNote : row.note,
+            updated_at: row.updated_at
+          })
+          .eq("id", row.id);
+
+        if (updErr) {
+          msg.style.color = "red";
+          msg.textContent = `อัปเดตแถว ${row.read_date} ไม่สำเร็จ: ` + updErr.message;
+          return;
+        }
+      }
+
+      msg.style.color = "green";
+      msg.textContent = `✅ บันทึกและคำนวณใหม่ ${readings.length - targetIdx} แถว เรียบร้อย`;
+      await renderReadings();
+      await loadPreviousMeterReading();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      setDefaultReadDate();
+      await loadSettings();
+      await loadActiveRooms();
+      await loadPreviousMeterReading();
+      await renderReadings(); // show history for default selection if any
+
+      document.getElementById("room").addEventListener("change", async () => {
+        await loadPreviousMeterReading();
+        await renderReadings();
+      });
+      document.getElementById("readDate").addEventListener("change", async () => {
+        await loadPreviousMeterReading();
+        await renderReadings();
+      });
+
+      ["currWater", "currElectric"].forEach(id => {
+        document.getElementById(id).addEventListener("input", updateSummaryPreview);
+      });
+    });
+  </script>
+</body>
+</html>
+

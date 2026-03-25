@@ -1,0 +1,1051 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สรุปภาพรวมรายเดือน</title>
+  <script src="date-format.js"></script>
+  <script src="rental-calc.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #f6efe8;
+      --card: #fffdfa;
+      --soft: #fcf7f2;
+      --line: #e7d6c6;
+      --line-strong: #d9c1aa;
+      --text: #5f3719;
+      --subtext: #8a6a54;
+      --primary: #a66a2b;
+      --primary-dark: #8d5720;
+      --navy: #2b3a67;
+      --navy-soft: #eef2fb;
+      --green: #1b7f3b;
+      --green-soft: #eaf7ee;
+      --red: #b42318;
+      --red-soft: #fff1ef;
+      --yellow: #b76a00;
+      --yellow-soft: #fff6e8;
+      --shadow: 0 8px 24px rgba(107, 59, 28, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Prompt", Arial, sans-serif;
+      background: linear-gradient(180deg, #fbf6f1 0%, var(--bg) 180px);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 24px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 30px;
+      color: #7b4a23;
+      line-height: 1.1;
+    }
+
+    .title-wrap p {
+      margin: 8px 0 0;
+      color: var(--subtext);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 760px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(107, 59, 28, 0.14);
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-light {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+    }
+    .btn-navy { background: var(--navy); color: #fff; }
+    .btn-navy:hover { background: #213158; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      color: #7b4a23;
+    }
+
+    .section-note {
+      color: var(--subtext);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .kpi .label {
+      color: var(--subtext);
+      font-size: 9px;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .kpi .value {
+      margin-top: 8px;
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+
+    .kpi .sub {
+      margin-top: 6px;
+      font-size: 9px;
+      color: var(--subtext);
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .value.red { color: var(--red); }
+    .value.green { color: var(--green); }
+    .value.yellow { color: var(--yellow); }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f7eadc;
+      color: #7b4a23;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .nowrap-table th,
+    .nowrap-table td {
+      white-space: nowrap;
+    }
+
+    tbody tr:hover { background: #fffcf8; }
+
+    .money {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--subtext);
+      padding: 28px 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill-success { background: var(--green-soft); color: var(--green); }
+    .pill-danger { background: var(--red-soft); color: var(--red); }
+    .pill-warning { background: var(--yellow-soft); color: var(--yellow); }
+    .pill-info { background: var(--navy-soft); color: var(--navy); }
+
+    .note-box {
+      background: var(--soft);
+      border: 1px dashed var(--line-strong);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--subtext);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .print-meta { display: none; }
+
+    @media (max-width: 1100px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 18px 14px 28px; }
+      .title-wrap h1 { font-size: 24px; }
+      .card { padding: 14px; }
+      .filters, .kpi-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: #fff; color: #000; }
+      .btn, .filters { display: none !important; }
+      .page { max-width: 100%; margin: 0; padding: 0; }
+      .card { box-shadow: none; border: 1px solid #bbb; padding: 12px; }
+      .print-meta { display: block; margin-bottom: 8px; color: #444; font-size: 12px; }
+      th, td { color: #000; border-color: #bbb; }
+      th { background: #eee !important; }
+      .kpi { border-color: #bbb; background: #fff; }
+      .status-item { background: #fff; border-color: #bbb; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>สรุปภาพรวมรายเดือน</h1>
+        <p>หน้านี้ใช้การคำนวณเดียวกับระบบห้องรายเดือนผ่าน <strong>rental-calc.js</strong> เพื่อให้เจ้าของเห็นภาพรวมรายรับ ยอดค้างชำระ ค่าน้ำไฟสะสม และสถานะของแต่ละห้องจากข้อมูลจริงชุดเดียวกัน</p>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn btn-light" onclick="location.href='monthly_home.html'">← กลับหน้าแรก</button>
+        <button class="btn btn-primary" onclick="refreshDashboard()">รีเฟรชข้อมูล</button>
+        <button class="btn btn-navy" onclick="printSummaryPage()">พิมพ์</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 class="section-title">ตัวกรอง</h2>
+        <div class="section-note">เลือกปีเพื่อดูภาพรวมรายปี และเลือกสถานะเพื่อโฟกัสเฉพาะห้องที่กำลังเช่าหรือห้องที่ปิดสัญญาแล้ว</div>
+      </div>
+
+      <div class="filters">
+        <div>
+          <label for="yearInput">ปี</label>
+          <input type="number" id="yearInput">
+        </div>
+        <div>
+          <label for="summaryView">มุมมองสรุป</label>
+          <select id="summaryView">
+            <option value="yearly">รายปี</option>
+            <option value="monthly">รายเดือน</option>
+          </select>
+        </div>
+        <div>
+          <label for="monthInput">เดือน</label>
+          <input type="month" id="monthInput">
+        </div>
+        <div>
+          <label for="statusFilter">สถานะห้อง</label>
+          <select id="statusFilter">
+            <option value="all">ทั้งหมด</option>
+            <option value="active">กำลังเช่า</option>
+            <option value="archived">ปิดสัญญาแล้ว</option>
+          </select>
+        </div>
+        <div>
+          <label for="roomFilter">ค้นหาห้อง</label>
+          <input type="text" id="roomFilter" placeholder="เช่น 501">
+        </div>
+        <div>
+          <label for="ownerFocus">มุมมอง</label>
+          <select id="ownerFocus">
+            <option value="portfolio">ภาพรวมพอร์ต</option>
+            <option value="cashflow">เน้นกระแสเงินสด</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 class="section-title">ภาพรวมสำหรับเจ้าของ</h2>
+        <div class="print-meta" id="printMeta"></div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="label">ห้องทั้งหมด</div>
+          <div class="value" id="kpiRooms">0</div>
+          <div class="sub">อิงจากตาราง rooms</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiActiveLabel">สัญญาที่กำลังเช่า</div>
+          <div class="value green" id="kpiActive">0</div>
+          <div class="sub" id="kpiActiveSub">ยังมีผู้เช่าอยู่ตอนนี้</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiArchivedLabel">สัญญาที่ปิดแล้ว</div>
+          <div class="value" id="kpiArchived">0</div>
+          <div class="sub" id="kpiArchivedSub">อิงจาก rental_history</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiCashInLabel">รับเงินจริงปีนี้</div>
+          <div class="value green" id="kpiCashIn">0.00</div>
+          <div class="sub" id="kpiCashInSub">รวมจาก payments ตามวันที่จ่ายจริง</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiCashAllocLabel">ยอดตัดชำระทั้งปี</div>
+          <div class="value green" id="kpiCashAlloc">0.00</div>
+          <div class="sub" id="kpiCashAllocSub">อิงจากการจัดสรรของ rental-calc</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiDebtLabel">ยอดค้างชำระปัจจุบัน</div>
+          <div class="value red" id="kpiDebtNow">0.00</div>
+          <div class="sub" id="kpiDebtSub">ยอดที่ถึงกำหนดแล้วแต่ยังไม่ถูกตัดชำระ</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiPendingLabel">ค่าน้ำไฟรอรอบถัดไป</div>
+          <div class="value yellow" id="kpiPendingUtil">0.00</div>
+          <div class="sub" id="kpiPendingSub">ยอดสะสมที่ยังไม่ถึงกำหนด</div>
+        </div>
+        <div class="kpi">
+          <div class="label" id="kpiDebtRoomsLabel">ห้องที่มีค้างชำระ</div>
+          <div class="value red" id="kpiDebtRooms">0</div>
+          <div class="sub" id="kpiDebtRoomsSub">นับเฉพาะห้องที่ยังมียอดค้าง</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 class="section-title" id="overviewTitle">ภาพรวมรายเดือนของปีที่เลือก</h2>
+        <div class="section-note">สรุปตามรอบบิลที่คำนวณจาก rental-calc.js ไม่ใช่แค่รวมตัวเลขจากตารางแบบแยกส่วน</div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="monthlyOverviewTable" class="nowrap-table">
+          <thead>
+            <tr>
+              <th>เดือน</th>
+              <th class="money">ค่าเช่า</th>
+              <th class="money">ค่าน้ำ/ไฟ/ค่าอื่น</th>
+              <th class="money">เงินประกัน</th>
+              <th class="money">ยอดที่ต้องรับ</th>
+              <th class="money">ยอดที่ถูกตัดชำระแล้ว</th>
+              <th class="money">ค้างชำระ</th>
+              <th class="money">ค่าน้ำไฟสะสม</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 class="section-title">สถานะรายห้อง</h2>
+        <div class="section-note">ใช้ดูว่าห้องไหนควรติดตามเก็บเงิน ห้องไหนมียอดสะสม และห้องไหนปิดสัญญาแล้ว</div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="roomStatusTable">
+          <thead>
+            <tr>
+              <th>ห้อง</th>
+              <th>ผู้เช่า</th>
+              <th>สถานะ</th>
+              <th class="money">ค่าเช่า/เดือน</th>
+              <th class="money">เงินประกัน</th>
+              <th class="money">ยอดตามรอบบิล</th>
+              <th class="money">จ่ายแล้วตามการตัด</th>
+              <th class="money">ค้างชำระ</th>
+              <th class="money">ค่าน้ำไฟสะสม</th>
+              <th class="money">เครดิตจ่ายเกิน</th>
+              <th>สรุป</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 class="section-title">รับเงินจริงตามวิธีชำระ</h2>
+        <div class="section-note">สรุปจาก payments ของปีที่เลือก เพื่อดูสัดส่วนกระแสเงินสด</div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="paymentMethodTable">
+          <thead>
+            <tr>
+              <th>วิธีชำระ</th>
+              <th class="money">ยอดรับจริง</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="note-box">
+        หน้านี้แยก 2 มุมมองสำคัญให้เจ้าของดูง่าย:
+        1. <strong>ยอดรับเงินจริง</strong> อิงจากตาราง payments ตามวันที่จ่ายจริง
+        2. <strong>ยอดค้าง/ยอดที่ควรได้รับ</strong> อิงจากการคำนวณใน rental-calc.js ตามรอบสัญญา การตัดชำระ เงินประกัน ค่าน้ำไฟ และค่าใช้จ่ายอื่น
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const db = window.getSupabaseClient();
+
+    let roomsCache = [];
+    let activeBookingsCache = [];
+    let historyBookingsCache = [];
+    let paymentsCache = [];
+    let utilityReadingsCache = [];
+    let otherCostsCache = [];
+    let calcCache = new Map();
+
+    function money(value) {
+      return Number(value || 0).toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function getSelectedYear() {
+      const year = Number(document.getElementById("yearInput").value || 0);
+      return Number.isFinite(year) && year > 0 ? year : new Date().getFullYear();
+    }
+
+    function getSelectedView() {
+      return document.getElementById("summaryView").value || "yearly";
+    }
+
+    function getSelectedMonthInfo() {
+      const raw = document.getElementById("monthInput").value;
+      if (!raw) {
+        const now = new Date();
+        return { year: now.getFullYear(), month: now.getMonth() + 1 };
+      }
+      const [yearStr, monthStr] = raw.split("-");
+      return {
+        year: Number(yearStr),
+        month: Number(monthStr)
+      };
+    }
+
+    function getMonthName(month) {
+      const names = [
+        "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      return `${names[month]} (${String(month).padStart(2, "0")})`;
+    }
+
+    function getPaymentAmount(payment) {
+      const raw = payment.amount ?? payment.paid_amount ?? payment.total_amount ?? 0;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function getPaymentMethodName(payment) {
+      const value = String(payment.payment_method || payment.method || "").trim();
+      return value || "ไม่ระบุ";
+    }
+
+    function getDateOnly(value) {
+      if (!value) return null;
+      const d = new Date(String(value).split("T")[0] + "T00:00:00");
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function getRecordKey(record) {
+      return record._source === "history"
+        ? `history-${record.original_booking_id || record.id}`
+        : `active-${record.id}`;
+    }
+
+    function normalizeActiveBooking(row) {
+      return {
+        ...row,
+        _source: "active",
+        stopped_at: row.stopped_at || null
+      };
+    }
+
+    function normalizeHistoryBooking(row) {
+      return {
+        ...row,
+        _source: "history",
+        id: row.original_booking_id || row.id,
+        status: row.archive_action === "cancelled" ? "cancelled" : "archived",
+        stopped_at: row.cancelled_at || row.checkout_date || row.stopped_at || null
+      };
+    }
+
+    function getAllMonthlyRecords() {
+      return [
+        ...activeBookingsCache.map(normalizeActiveBooking),
+        ...historyBookingsCache.map(normalizeHistoryBooking)
+      ].filter(record => record.rent_type === "monthly" || !record.rent_type);
+    }
+
+    function getActiveMonthlyRecords() {
+      return activeBookingsCache
+        .map(normalizeActiveBooking)
+        .filter(record => String(record.status || "").toLowerCase() === "active");
+    }
+
+    function paymentBelongsToMonthlyRecord(payment, record) {
+      if (!payment || !record) return false;
+      const recordId = record.original_booking_id || record.id;
+      if (payment.booking_id !== undefined && payment.booking_id !== null && payment.booking_id !== "") {
+        return String(payment.booking_id) === String(recordId);
+      }
+      return String(payment.room_number || payment.room || "") === String(record.room_number || "");
+    }
+
+    function getMonthlyPayments() {
+      const records = getAllMonthlyRecords();
+      return paymentsCache.filter(payment => records.some(record => paymentBelongsToMonthlyRecord(payment, record)));
+    }
+
+    function getCalc(record) {
+      const key = getRecordKey(record);
+      if (!calcCache.has(key)) {
+        calcCache.set(
+          key,
+          calculatePaymentAllocationOldestFirst(
+            record,
+            paymentsCache,
+            [],
+            utilityReadingsCache,
+            otherCostsCache
+          )
+        );
+      }
+      return calcCache.get(key);
+    }
+
+    function getSettlementMetrics(record, calc) {
+      const pendingUtil = calc.months.reduce(
+        (sum, row) => sum + Number(row.pendingWater || 0) + Number(row.pendingElectric || 0),
+        0
+      );
+
+      if (record._source !== "history") {
+        return {
+          outstanding: Number(calc.totalDebt || 0),
+          pendingUtil,
+          netTotal: Number(calc.totalDebt || 0),
+          isSettled: Number(calc.totalDebt || 0) <= 0
+        };
+      }
+
+      const cancelExtraCost = Number(record.cancel_extra_cost || 0);
+      const cancelRefund = Number(record.cancel_refund || 0);
+      const netFromRows = calc.months.reduce((sum, row) => sum + Number(row.diff || 0), 0);
+      const netTotal = netFromRows + pendingUtil + cancelExtraCost - cancelRefund - Number(calc.extraCredit || 0) - Number(calc.depositCredit || 0);
+      const normalizedNet = Math.abs(netTotal) < 0.005 ? 0 : netTotal;
+
+      return {
+        outstanding: Math.max(normalizedNet, 0),
+        pendingUtil,
+        netTotal: normalizedNet,
+        isSettled: normalizedNet <= 0
+      };
+    }
+
+    function buildMonthMap(year) {
+      const result = {};
+      for (let month = 1; month <= 12; month++) {
+        result[month] = {
+          rent: 0,
+          extra: 0,
+          deposit: 0,
+          expected: 0,
+          allocated: 0,
+          outstanding: 0,
+          pending: 0
+        };
+      }
+
+      getAllMonthlyRecords().forEach(record => {
+        const calc = getCalc(record);
+        calc.months.forEach(row => {
+          if (row.year !== year || !result[row.month]) return;
+          result[row.month].rent += Number(row.rent || 0);
+          result[row.month].extra += Number(row.waterBill || 0) + Number(row.electricBill || 0) + Number(row.otherBill || 0);
+          result[row.month].deposit += Number(row.depositForMonth || 0);
+          result[row.month].expected += Number(row.required || 0);
+          result[row.month].allocated += Number(row.paid || 0);
+          result[row.month].outstanding += Math.max(Number(row.diff || 0), 0);
+          result[row.month].pending += Number(row.pendingWater || 0) + Number(row.pendingElectric || 0);
+        });
+      });
+
+      return result;
+    }
+
+    function getPaymentsForYear(year) {
+      return getMonthlyPayments().filter(payment => {
+        const d = getDateOnly(payment.paid_at || payment.created_at);
+        return d && d.getFullYear() === year;
+      });
+    }
+
+    function getPaymentsForSelectedPeriod(year) {
+      const view = getSelectedView();
+      const selectedMonth = getSelectedMonthInfo();
+      return getMonthlyPayments().filter(payment => {
+        const d = getDateOnly(payment.paid_at || payment.created_at);
+        if (!d) return false;
+        if (view === "monthly") {
+          return d.getFullYear() === selectedMonth.year && d.getMonth() + 1 === selectedMonth.month;
+        }
+        return d.getFullYear() === year;
+      });
+    }
+
+    function getRecordMetricsForView(record, year) {
+      const calc = getCalc(record);
+      const settlement = getSettlementMetrics(record, calc);
+      const view = getSelectedView();
+      const selectedMonth = getSelectedMonthInfo();
+
+      if (view !== "monthly" || record._source === "history") {
+        return {
+          calc,
+          required: view === "monthly"
+            ? Number((calc.months.find(item => item.year === selectedMonth.year && item.month === selectedMonth.month)?.required) || 0)
+            : Number(calc.totalRequired || 0),
+          allocated: view === "monthly"
+            ? Number((calc.months.find(item => item.year === selectedMonth.year && item.month === selectedMonth.month)?.paid) || 0)
+            : Number(calc.totalPaidApplied || 0),
+          outstanding: settlement.outstanding,
+          pendingUtil: settlement.pendingUtil,
+          extraCredit: Number(calc.extraCredit || 0),
+          debtForFocus: settlement.outstanding
+        };
+      }
+
+      const row = calc.months.find(item => item.year === selectedMonth.year && item.month === selectedMonth.month);
+      if (!row) {
+        return {
+          calc,
+          required: 0,
+          allocated: 0,
+          outstanding: 0,
+          pendingUtil: 0,
+          extraCredit: 0,
+          debtForFocus: 0
+        };
+      }
+
+      return {
+        calc,
+        required: Number(row.required || 0),
+        allocated: Number(row.paid || 0),
+        outstanding: Math.max(Number(row.diff || 0), 0),
+        pendingUtil: Number(row.pendingWater || 0) + Number(row.pendingElectric || 0),
+        extraCredit: 0,
+        debtForFocus: Math.max(Number(row.diff || 0), 0)
+      };
+    }
+
+    function updateKpis(year, records) {
+      const activeRecords = getActiveMonthlyRecords();
+      const view = getSelectedView();
+      const selectedMonth = getSelectedMonthInfo();
+      const activeMetrics = activeRecords.map(record => getRecordMetricsForView(record, year));
+      const periodPayments = getPaymentsForSelectedPeriod(year);
+      const periodVisibleRecords = records.filter(record => {
+        const metrics = getRecordMetricsForView(record, year);
+        return Number(metrics.required || 0) > 0
+          || Number(metrics.allocated || 0) > 0
+          || Number(metrics.outstanding || 0) > 0
+          || Number(metrics.pendingUtil || 0) > 0;
+      });
+      const recordMetrics = records.map(record => getRecordMetricsForView(record, year));
+
+      const debtNow = activeMetrics.reduce((sum, metric) => sum + Number(metric.outstanding || 0), 0);
+      const pendingUtil = activeMetrics.reduce((sum, metric) => sum + Number(metric.pendingUtil || 0), 0);
+      const periodCashIn = periodPayments.reduce((sum, payment) => sum + getPaymentAmount(payment), 0);
+      const periodAllocated = recordMetrics.reduce((sum, metric) => sum + Number(metric.allocated || 0), 0);
+      const debtRooms = records.filter(record => {
+        const metrics = getRecordMetricsForView(record, year);
+        return Number(metrics.debtForFocus || 0) > 0;
+      }).length;
+      const activeCount = view === "monthly"
+        ? periodVisibleRecords.filter(record => record._source !== "history").length
+        : activeRecords.length;
+      const archivedCount = view === "monthly"
+        ? periodVisibleRecords.filter(record => record._source === "history").length
+        : historyBookingsCache.length;
+
+      document.getElementById("kpiRooms").textContent = roomsCache.length.toLocaleString("th-TH");
+      document.getElementById("kpiActive").textContent = activeCount.toLocaleString("th-TH");
+      document.getElementById("kpiArchived").textContent = archivedCount.toLocaleString("th-TH");
+      document.getElementById("kpiCashIn").textContent = money(periodCashIn);
+      document.getElementById("kpiCashAlloc").textContent = money(periodAllocated);
+      document.getElementById("kpiDebtNow").textContent = money(debtNow);
+      document.getElementById("kpiPendingUtil").textContent = money(pendingUtil);
+      document.getElementById("kpiDebtRooms").textContent = debtRooms.toLocaleString("th-TH");
+
+      if (view === "monthly") {
+        const monthName = getMonthName(selectedMonth.month);
+        document.getElementById("kpiActiveLabel").textContent = `สัญญาที่มีรอบบิล ${monthName}`;
+        document.getElementById("kpiActiveSub").textContent = "เฉพาะสัญญาที่มีข้อมูลในเดือนนี้";
+        document.getElementById("kpiArchivedLabel").textContent = `ประวัติที่มีผลใน ${monthName}`;
+        document.getElementById("kpiArchivedSub").textContent = "เฉพาะสัญญาที่มีข้อมูลในเดือนนี้";
+        document.getElementById("kpiCashInLabel").textContent = `รับเงินจริงเดือน ${monthName}`;
+        document.getElementById("kpiCashInSub").textContent = "อิงจากวันที่จ่ายจริง";
+        document.getElementById("kpiCashAllocLabel").textContent = `ยอดตัดชำระเดือน ${monthName}`;
+        document.getElementById("kpiCashAllocSub").textContent = "อิงจากการตัดชำระตามรอบบิล";
+        document.getElementById("kpiDebtLabel").textContent = `ยอดค้างเดือน ${monthName}`;
+        document.getElementById("kpiDebtSub").textContent = "เฉพาะรอบบิลของเดือนที่เลือก";
+        document.getElementById("kpiPendingLabel").textContent = `ค่าน้ำไฟรอรอบถัดไป ${monthName}`;
+        document.getElementById("kpiPendingSub").textContent = "ยอดสะสมของเดือนที่เลือก";
+        document.getElementById("kpiDebtRoomsLabel").textContent = `ห้องค้างชำระเดือน ${monthName}`;
+        document.getElementById("kpiDebtRoomsSub").textContent = "นับเฉพาะห้องที่ค้างในเดือนนี้";
+        return;
+      }
+
+      document.getElementById("kpiActiveLabel").textContent = "สัญญาที่กำลังเช่า";
+      document.getElementById("kpiActiveSub").textContent = "ยังมีผู้เช่าอยู่ตอนนี้";
+      document.getElementById("kpiArchivedLabel").textContent = "สัญญาที่ปิดแล้ว";
+      document.getElementById("kpiArchivedSub").textContent = "อิงจาก rental_history";
+      document.getElementById("kpiCashInLabel").textContent = "รับเงินจริงปีนี้";
+      document.getElementById("kpiCashInSub").textContent = "รวมจาก payments ตามวันที่จ่ายจริง";
+      document.getElementById("kpiCashAllocLabel").textContent = "ยอดตัดชำระทั้งปี";
+      document.getElementById("kpiCashAllocSub").textContent = "อิงจากการจัดสรรของ rental-calc";
+      document.getElementById("kpiDebtLabel").textContent = "ยอดค้างชำระปัจจุบัน";
+      document.getElementById("kpiDebtSub").textContent = "ยอดสุทธิที่ยังค้างของทุกสัญญา";
+      document.getElementById("kpiPendingLabel").textContent = "ค่าน้ำไฟรอรอบถัดไป";
+      document.getElementById("kpiPendingSub").textContent = "ยอดสะสมที่ยังไม่ถึงกำหนด";
+      document.getElementById("kpiDebtRoomsLabel").textContent = "ห้องที่มีค้างชำระ";
+      document.getElementById("kpiDebtRoomsSub").textContent = "นับเฉพาะห้องที่ยังมียอดค้าง";
+    }
+
+    function renderMonthlyOverview(year) {
+      const tbody = document.querySelector("#monthlyOverviewTable tbody");
+      const monthMap = buildMonthMap(year);
+      const view = getSelectedView();
+      const selectedMonth = getSelectedMonthInfo();
+      const title = document.getElementById("overviewTitle");
+
+      tbody.innerHTML = "";
+      const monthsToRender = view === "monthly"
+        ? [selectedMonth.month]
+        : Array.from({ length: 12 }, (_, idx) => idx + 1);
+
+      title.textContent = view === "monthly"
+        ? `ภาพรวมของเดือน ${getMonthName(selectedMonth.month)}`
+        : `ภาพรวมรายเดือนของปี ${year}`;
+
+      monthsToRender.forEach(month => {
+        const row = monthMap[month];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${getMonthName(month)}</td>
+          <td class="money">${money(row.rent)}</td>
+          <td class="money">${money(row.extra)}</td>
+          <td class="money">${money(row.deposit)}</td>
+          <td class="money">${money(row.expected)}</td>
+          <td class="money">${money(row.allocated)}</td>
+          <td class="money">${money(row.outstanding)}</td>
+          <td class="money">${money(row.pending)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const total = monthsToRender.reduce((sum, month) => {
+        const row = monthMap[month];
+        return {
+        rent: sum.rent + row.rent,
+        extra: sum.extra + row.extra,
+        deposit: sum.deposit + row.deposit,
+        expected: sum.expected + row.expected,
+        allocated: sum.allocated + row.allocated,
+        outstanding: sum.outstanding + row.outstanding,
+        pending: sum.pending + row.pending
+      };
+      }, { rent: 0, extra: 0, deposit: 0, expected: 0, allocated: 0, outstanding: 0, pending: 0 });
+
+      const totalTr = document.createElement("tr");
+      totalTr.innerHTML = `
+        <th>${view === "monthly" ? "รวมของเดือนที่เลือก" : `รวมทั้งปี ${year}`}</th>
+        <th class="money">${money(total.rent)}</th>
+        <th class="money">${money(total.extra)}</th>
+        <th class="money">${money(total.deposit)}</th>
+        <th class="money">${money(total.expected)}</th>
+        <th class="money">${money(total.allocated)}</th>
+        <th class="money">${money(total.outstanding)}</th>
+        <th class="money">${money(total.pending)}</th>
+      `;
+      tbody.appendChild(totalTr);
+    }
+
+    function getRoomStatusPill(record, calc, viewMetrics) {
+      const outstanding = viewMetrics ? viewMetrics.outstanding : getSettlementMetrics(record, calc).outstanding;
+      const pendingUtil = viewMetrics ? viewMetrics.pendingUtil : getSettlementMetrics(record, calc).pendingUtil;
+      if (outstanding > 0) return `<span class="pill pill-danger">ค้างชำระ</span>`;
+      if (record._source !== "history" && pendingUtil > 0) return `<span class="pill pill-warning">มีค่าน้ำไฟสะสม</span>`;
+      if (record._source === "history") return `<span class="pill pill-info">ปิดสัญญาแล้ว</span>`;
+      return `<span class="pill pill-success">ปกติ</span>`;
+    }
+
+    function filterRecords(records) {
+      const status = document.getElementById("statusFilter").value;
+      const roomKeyword = document.getElementById("roomFilter").value.trim().toLowerCase();
+
+      return records.filter(record => {
+        const isArchived = record._source === "history";
+        if (status === "active" && isArchived) return false;
+        if (status === "archived" && !isArchived) return false;
+        if (roomKeyword && !String(record.room_number || "").toLowerCase().includes(roomKeyword)) return false;
+        return true;
+      });
+    }
+
+    function renderRoomStatusTable(records, year) {
+      const tbody = document.querySelector("#roomStatusTable tbody");
+      tbody.innerHTML = "";
+
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
+        return;
+      }
+
+      records.forEach(record => {
+        const viewMetrics = getRecordMetricsForView(record, year);
+        const calc = viewMetrics.calc;
+        if (getSelectedView() === "monthly" && viewMetrics.required <= 0 && viewMetrics.allocated <= 0 && viewMetrics.outstanding <= 0 && viewMetrics.pendingUtil <= 0) {
+          return;
+        }
+        const summary = record._source === "history"
+          ? `ปิดสัญญาแล้ว (${record.archive_action || "-"})`
+          : `กำลังเช่า | เริ่ม ${formatDisplayDate(record.checkin_date || record.start_date || "")}`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${record.room_number || "-"}</td>
+          <td>${record.tenant_name || record.guest_name || "-"}</td>
+          <td>${record._source === "history" ? "ประวัติ" : "กำลังเช่า"}</td>
+          <td class="money">${money(record.monthly_rent || 0)}</td>
+          <td class="money">${money(record.deposit || 0)}</td>
+          <td class="money">${money(viewMetrics.required)}</td>
+          <td class="money">${money(viewMetrics.allocated)}</td>
+          <td class="money">${money(viewMetrics.outstanding)}</td>
+          <td class="money">${money(viewMetrics.pendingUtil)}</td>
+          <td class="money">${money(viewMetrics.extraCredit)}</td>
+          <td>${getRoomStatusPill(record, calc, viewMetrics)}<div style="margin-top:6px; color:#8a6a54; font-size:12px;">${summary}</div></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (!tbody.hasChildNodes()) {
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">ไม่พบห้องที่มีข้อมูลในช่วงเวลาที่เลือก</td></tr>`;
+      }
+    }
+
+    function renderPaymentMethodTable(year) {
+      const tbody = document.querySelector("#paymentMethodTable tbody");
+      const methodMap = {};
+      const view = getSelectedView();
+      const selectedMonth = getSelectedMonthInfo();
+
+      getPaymentsForSelectedPeriod(year).forEach(payment => {
+        const key = getPaymentMethodName(payment);
+        if (!methodMap[key]) methodMap[key] = 0;
+        methodMap[key] += getPaymentAmount(payment);
+      });
+
+      const entries = Object.entries(methodMap).sort((a, b) => b[1] - a[1]);
+      if (!entries.length) {
+        tbody.innerHTML = `<tr><td colspan="2" class="empty">ยังไม่มีรายการชำระเงินจริงในปีที่เลือก</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = entries.map(([method, amount]) => `
+        <tr>
+          <td>${method}</td>
+          <td class="money">${money(amount)}</td>
+        </tr>
+      `).join("");
+
+      const total = entries.reduce((sum, [, amount]) => sum + amount, 0);
+      tbody.innerHTML += `
+        <tr>
+          <th>${view === "monthly" ? `รวมเดือน ${getMonthName(selectedMonth.month)}` : `รวมทั้งปี ${year}`}</th>
+          <th class="money">${money(total)}</th>
+        </tr>
+      `;
+    }
+
+    async function loadData() {
+      const [
+        { data: roomsRows, error: roomErr },
+        { data: bookingRows, error: bookingErr },
+        { data: historyRows, error: historyErr },
+        { data: paymentRows, error: paymentErr },
+        { data: utilityRows, error: utilityErr },
+        { data: otherCostRows, error: otherCostErr }
+      ] = await Promise.all([
+        db.from("rooms").select("id, room_number, status"),
+        db.from("bookings").select("*").eq("rent_type", "monthly"),
+        db.from("rental_history").select("*").eq("rent_type", "monthly"),
+        db.from("payments").select("*"),
+        db.from("utility_readings").select("room_number, read_date, water_amount, electric_amount"),
+        db.from("other_costs").select("*")
+      ]);
+
+      if (roomErr) console.error("rooms error:", roomErr);
+      if (bookingErr) console.error("bookings error:", bookingErr);
+      if (historyErr) console.error("rental_history error:", historyErr);
+      if (paymentErr) console.error("payments error:", paymentErr);
+      if (utilityErr) console.error("utility_readings error:", utilityErr);
+      if (otherCostErr) console.error("other_costs error:", otherCostErr);
+
+      roomsCache = roomsRows || [];
+      activeBookingsCache = bookingRows || [];
+      historyBookingsCache = historyRows || [];
+      paymentsCache = paymentRows || [];
+      utilityReadingsCache = utilityRows || [];
+      otherCostsCache = otherCostRows || [];
+      calcCache = new Map();
+    }
+
+    async function refreshDashboard() {
+      await loadData();
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      const year = getSelectedYear();
+      const records = filterRecords(getAllMonthlyRecords());
+      updateKpis(year, records);
+      renderMonthlyOverview(year);
+      renderRoomStatusTable(records, year);
+      renderPaymentMethodTable(year);
+    }
+
+    function printSummaryPage() {
+      document.getElementById("printMeta").textContent = `พิมพ์เมื่อ: ${formatDisplayDateTime(new Date())}`;
+      window.print();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const now = new Date();
+      document.getElementById("yearInput").value = now.getFullYear();
+      document.getElementById("monthInput").value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      document.getElementById("statusFilter").addEventListener("change", renderDashboard);
+      document.getElementById("roomFilter").addEventListener("input", renderDashboard);
+      document.getElementById("ownerFocus").addEventListener("change", renderDashboard);
+      document.getElementById("yearInput").addEventListener("change", renderDashboard);
+      document.getElementById("summaryView").addEventListener("change", renderDashboard);
+      document.getElementById("monthInput").addEventListener("change", renderDashboard);
+      await refreshDashboard();
+    });
+  </script>
+</body>
+</html>
+
+

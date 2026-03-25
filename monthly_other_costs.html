@@ -1,0 +1,764 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บันทึกค่าใช้จ่ายเพิ่มเติมรายเดือน</title>
+  <script src="date-format.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #f6efe8;
+      --card: #fffdfa;
+      --card-soft: #fcf7f2;
+      --line: #e7d6c6;
+      --line-strong: #d9c1aa;
+      --text: #5f3719;
+      --subtext: #8a6a54;
+      --primary: #a66a2b;
+      --primary-dark: #8d5720;
+      --primary-soft: #f4e6d6;
+      --danger: #b42318;
+      --danger-soft: #fff1ef;
+      --success: #1b7f3b;
+      --success-soft: #eaf7ee;
+      --warning: #b76a00;
+      --warning-soft: #fff6e8;
+      --shadow: 0 8px 24px rgba(107, 59, 28, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Prompt", Arial, sans-serif;
+      background: linear-gradient(180deg, #fbf6f1 0%, var(--bg) 180px);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 24px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.1;
+      color: #7b4a23;
+    }
+
+    .title-wrap p {
+      margin: 8px 0 0;
+      color: var(--subtext);
+      font-size: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(107, 59, 28, 0.14);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    .btn-light {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+    }
+
+    .btn-danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid #f0c2be;
+      padding: 8px 12px;
+      font-size: 12px;
+      box-shadow: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      color: #7b4a23;
+    }
+
+    .section-note {
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    .intro-box {
+      background: var(--card-soft);
+      border: 1px dashed var(--line-strong);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      color: var(--subtext);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(166, 106, 43, 0.12);
+      border-color: var(--primary);
+    }
+
+    .inline-help {
+      margin-top: 6px;
+      color: var(--subtext);
+      font-size: 12px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .summary-box {
+      background: var(--card-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .summary-box .label {
+      color: var(--subtext);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .summary-box .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #7b4a23;
+    }
+
+    .summary-box .sub {
+      margin-top: 4px;
+      color: var(--subtext);
+      font-size: 12px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 0.8fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .status.show { display: block; }
+    .status.success { background: var(--success-soft); color: var(--success); border: 1px solid #bfe2c8; }
+    .status.error { background: var(--danger-soft); color: var(--danger); border: 1px solid #f0c2be; }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    thead th {
+      background: #f7eadc;
+      color: #7b4a23;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:hover { background: #fffcf8; }
+
+    .money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .muted { color: var(--subtext); }
+    .empty { text-align: center; color: var(--subtext); padding: 28px 14px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f4e6d6;
+      color: #8d5720;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill.active { background: #eaf7ee; color: var(--success); }
+    .pill.stopped { background: #fff6e8; color: var(--warning); }
+
+    .desc {
+      color: #6b4a35;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .page { padding: 18px 14px 28px; }
+      .topbar { margin-bottom: 14px; }
+      .title-wrap h1 { font-size: 24px; }
+      .card { padding: 14px; }
+      .form-grid, .summary-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>บันทึกค่าใช้จ่ายเพิ่มเติมรายเดือน</h1>
+        <p>ใช้สำหรับบันทึกค่าใช้จ่ายอื่นนอกเหนือจากค่าน้ำและค่าไฟ เช่น ค่าซ่อม ค่าทำความสะอาด ค่าเสียหาย หรือค่าใช้จ่ายเฉพาะกรณีของผู้เช่ารายเดือน</p>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn btn-light" onclick="location.href='monthly_home.html'">← กลับหน้าแรก</button>
+        <button class="btn btn-primary" onclick="location.href='monthly_summary.html'">ดูสรุปรายเดือน</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <div class="section-header">
+          <h2 class="section-title">เพิ่มรายการใหม่</h2>
+          <div class="section-note">บันทึกลงตาราง <strong>other_costs</strong> เพื่อให้เชื่อมกับหน้าสรุปรายเดือนอัตโนมัติ</div>
+        </div>
+
+        <div class="intro-box">
+          เลือกห้องที่กำลังเช่าอยู่ แล้วระบุวันที่ที่ค่าใช้จ่ายเกิดขึ้นจริง ระบบจะจัดเดือน/ปีจากวันที่นั้นให้เอง เพื่อให้ยอดไปถูกรวมในเดือนที่ถูกต้องของสัญญาเช่า
+        </div>
+
+        <div class="form-grid">
+          <div class="full">
+            <label for="bookingSelect">ห้อง / ผู้เช่า</label>
+            <select id="bookingSelect">
+              <option value="">-- เลือกห้องที่กำลังเช่า --</option>
+            </select>
+            <div class="inline-help" id="bookingHint">เฉพาะห้องที่เป็นสัญญารายเดือนและยังอยู่ในสถานะใช้งาน</div>
+          </div>
+
+          <div>
+            <label for="costDate">วันที่เกิดค่าใช้จ่าย</label>
+            <input type="date" id="costDate">
+          </div>
+
+          <div>
+            <label for="amount">จำนวนเงิน (บาท)</label>
+            <input type="number" id="amount" min="0" step="0.01" placeholder="เช่น 500">
+          </div>
+
+          <div class="full">
+            <label for="description">รายละเอียดค่าใช้จ่าย</label>
+            <textarea id="description" placeholder="เช่น ค่าทำความสะอาดหลังย้ายออก, ค่าซ่อมลูกบิดประตู, ค่าของเสียหาย"></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveOtherCost()">บันทึกค่าใช้จ่ายเพิ่มเติม</button>
+        <div id="formStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2 class="section-title">ภาพรวม</h2>
+          <div class="section-note">อัปเดตจากรายการที่แสดงด้านล่าง</div>
+        </div>
+
+        <div class="summary-strip">
+          <div class="summary-box">
+            <div class="label">จำนวนรายการ</div>
+            <div class="value" id="summaryCount">0</div>
+            <div class="sub">หลังจากกรองข้อมูลแล้ว</div>
+          </div>
+          <div class="summary-box">
+            <div class="label">ยอดรวม</div>
+            <div class="value" id="summaryAmount">0.00</div>
+            <div class="sub">บาท</div>
+          </div>
+          <div class="summary-box">
+            <div class="label">ห้องที่มีรายการ</div>
+            <div class="value" id="summaryRooms">0</div>
+            <div class="sub">ห้อง</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:18px;">
+      <div class="section-header">
+        <h2 class="section-title">ประวัติค่าใช้จ่ายเพิ่มเติม</h2>
+        <div class="section-note">ใช้กรองตามห้องหรือเดือน เพื่อเช็กย้อนหลังหรือแก้ไขความถูกต้องก่อนสรุปยอด</div>
+      </div>
+
+      <div class="toolbar">
+        <div>
+          <label for="filterRoom">กรองตามห้อง</label>
+          <input type="text" id="filterRoom" placeholder="เช่น 501">
+        </div>
+        <div>
+          <label for="filterMonth">กรองตามเดือน</label>
+          <input type="month" id="filterMonth">
+        </div>
+        <div>
+          <label for="filterStatus">สถานะสัญญา</label>
+          <select id="filterStatus">
+            <option value="">ทั้งหมด</option>
+            <option value="active">กำลังเช่า</option>
+            <option value="stopped">ประวัติ / สิ้นสุดแล้ว</option>
+          </select>
+        </div>
+        <button class="btn btn-light" onclick="renderOtherCosts()">รีเฟรชรายการ</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="otherCostTable">
+          <thead>
+            <tr>
+              <th>ห้อง</th>
+              <th>ผู้เช่า</th>
+              <th>สถานะ</th>
+              <th>วันที่เกิดค่าใช้จ่าย</th>
+              <th>เดือน/ปีที่นับยอด</th>
+              <th class="money">จำนวนเงิน</th>
+              <th>รายละเอียด</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="8" class="empty">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const db = window.getSupabaseClient();
+
+    let currentUserRole = "viewer";
+    let activeBookings = [];
+    let bookingLookup = new Map();
+
+    function money(value) {
+      return Number(value || 0).toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function dateText(value) {
+      return value ? formatDisplayDate(value) : "-";
+    }
+
+    function monthText(year, month) {
+      if (!year || !month) return "-";
+      return `${String(month).padStart(2, "0")}/${year}`;
+    }
+
+    function todayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function setStatus(message, type = "success") {
+      const el = document.getElementById("formStatus");
+      if (!message) {
+        el.className = "status";
+        el.textContent = "";
+        return;
+      }
+      el.className = `status show ${type}`;
+      el.textContent = message;
+    }
+
+    async function getCurrentUserRole() {
+      try {
+        const savedRole =
+          localStorage.getItem("role") ||
+          sessionStorage.getItem("role") ||
+          localStorage.getItem("user_role") ||
+          sessionStorage.getItem("user_role");
+        if (savedRole) {
+          currentUserRole = savedRole;
+          return;
+        }
+
+        const { data: { user }, error: userError } = await db.auth.getUser();
+        if (userError || !user) {
+          currentUserRole = "viewer";
+          return;
+        }
+
+        const { data, error } = await db
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        currentUserRole = error || !data ? "viewer" : (data.role || "viewer");
+      } catch {
+        currentUserRole = "viewer";
+      }
+    }
+
+    function isAdmin() {
+      return currentUserRole === "admin";
+    }
+
+    async function loadActiveRooms() {
+      const select = document.getElementById("bookingSelect");
+      const hint = document.getElementById("bookingHint");
+      select.innerHTML = '<option value="">-- เลือกห้องที่กำลังเช่า --</option>';
+      bookingLookup = new Map();
+
+      const { data, error } = await db
+        .from("bookings")
+        .select("id, room_number, tenant_name, rent_type, status, checkin_date, checkout_date")
+        .eq("rent_type", "monthly")
+        .in("status", ["active", "ended"])
+        .order("room_number", { ascending: true });
+
+      if (error) {
+        hint.textContent = `โหลดรายชื่อห้องไม่สำเร็จ: ${error.message}`;
+        return;
+      }
+
+      activeBookings = (data || []).filter(b => String(b.room_number || "").trim());
+      activeBookings.forEach(booking => {
+        bookingLookup.set(String(booking.id), booking);
+        const option = document.createElement("option");
+        option.value = String(booking.id);
+        option.textContent = `${booking.room_number} - ${booking.tenant_name || "-"}`;
+        select.appendChild(option);
+      });
+
+      hint.textContent = activeBookings.length
+        ? `พบ ${activeBookings.length} ห้องที่เลือกบันทึกค่าใช้จ่ายได้`
+        : "ยังไม่พบห้องรายเดือนในระบบ";
+    }
+
+    async function saveOtherCost() {
+      setStatus("");
+
+      const bookingIdStr = document.getElementById("bookingSelect").value;
+      const costDate = document.getElementById("costDate").value;
+      const amount = Number(document.getElementById("amount").value || 0);
+      const description = document.getElementById("description").value.trim();
+
+      if (!bookingIdStr) {
+        setStatus("กรุณาเลือกห้องก่อนบันทึก", "error");
+        return;
+      }
+      if (!costDate) {
+        setStatus("กรุณาเลือกวันที่เกิดค่าใช้จ่าย", "error");
+        return;
+      }
+      if (!Number.isFinite(amount) || amount <= 0) {
+        setStatus("กรุณากรอกจำนวนเงินที่มากกว่า 0", "error");
+        return;
+      }
+      if (!description) {
+        setStatus("กรุณากรอกรายละเอียดค่าใช้จ่าย", "error");
+        return;
+      }
+
+      const booking = bookingLookup.get(bookingIdStr);
+      if (!booking) {
+        setStatus("ไม่พบข้อมูลห้องที่เลือก", "error");
+        return;
+      }
+
+      const dateObj = new Date(`${costDate}T00:00:00`);
+      const year = dateObj.getFullYear();
+      const month = dateObj.getMonth() + 1;
+
+      const payload = {
+        booking_id: Number(bookingIdStr),
+        room_number: String(booking.room_number || "").trim(),
+        cost_date: costDate,
+        year,
+        month,
+        amount,
+        description,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await db.from("other_costs").insert(payload);
+      if (error) {
+        setStatus(`บันทึกไม่สำเร็จ: ${error.message}`, "error");
+        return;
+      }
+
+      document.getElementById("amount").value = "";
+      document.getElementById("description").value = "";
+      setStatus("บันทึกค่าใช้จ่ายเพิ่มเติมเรียบร้อยแล้ว");
+      await renderOtherCosts();
+    }
+
+    async function deleteOtherCost(id) {
+      if (!isAdmin()) {
+        alert("เฉพาะ admin เท่านั้น");
+        return;
+      }
+      if (!confirm("ยืนยันการลบรายการนี้หรือไม่?")) return;
+
+      const { error } = await db.from("other_costs").delete().eq("id", id);
+      if (error) {
+        alert(`ลบไม่สำเร็จ: ${error.message}`);
+        return;
+      }
+
+      await renderOtherCosts();
+    }
+
+    function updateSummary(rows) {
+      const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+      const roomSet = new Set(rows.map(row => String(row.room_number || "").trim()).filter(Boolean));
+      document.getElementById("summaryCount").textContent = rows.length.toLocaleString("th-TH");
+      document.getElementById("summaryAmount").textContent = money(totalAmount);
+      document.getElementById("summaryRooms").textContent = roomSet.size.toLocaleString("th-TH");
+    }
+
+    function getBookingStatus(record) {
+      const raw = String(record.booking_status || record.status || "").toLowerCase();
+      if (raw === "active") return { label: "กำลังเช่า", className: "active" };
+      return { label: "ประวัติ / สิ้นสุดแล้ว", className: "stopped" };
+    }
+
+    async function renderOtherCosts() {
+      const tbody = document.querySelector("#otherCostTable tbody");
+      const filterRoom = document.getElementById("filterRoom").value.trim();
+      const filterMonth = document.getElementById("filterMonth").value.trim();
+      const filterStatus = document.getElementById("filterStatus").value;
+
+      tbody.innerHTML = `<tr><td colspan="8" class="empty">กำลังโหลด...</td></tr>`;
+
+      const [
+        { data: costRows, error: costError },
+        { data: bookingRows, error: bookingError },
+        { data: historyRows, error: historyError }
+      ] = await Promise.all([
+        db.from("other_costs")
+          .select("*")
+          .order("cost_date", { ascending: false })
+          .order("created_at", { ascending: false }),
+        db.from("bookings")
+          .select("id, room_number, tenant_name, status"),
+        db.from("rental_history")
+          .select("original_booking_id, room_number, tenant_name, archive_action")
+      ]);
+
+      if (costError) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty" style="color:#b42318;">โหลดประวัติไม่สำเร็จ: ${escapeHtml(costError.message)}</td></tr>`;
+        updateSummary([]);
+        return;
+      }
+
+      if (bookingError) {
+        console.error("bookings lookup error:", bookingError);
+      }
+      if (historyError) {
+        console.error("rental_history lookup error:", historyError);
+      }
+
+      const bookingById = new Map((bookingRows || []).map(row => [String(row.id), row]));
+      const historyByBookingId = new Map((historyRows || []).map(row => [String(row.original_booking_id), row]));
+
+      let rows = (costRows || []).map(row => {
+        const booking = bookingById.get(String(row.booking_id)) || null;
+        const history = historyByBookingId.get(String(row.booking_id)) || null;
+        return {
+          ...row,
+          room_number: row.room_number || booking?.room_number || history?.room_number || "-",
+          tenant_name: booking?.tenant_name || history?.tenant_name || "-",
+          booking_status: booking?.status || (history ? "stopped" : "")
+        };
+      });
+
+      if (filterRoom) {
+        rows = rows.filter(row => String(row.room_number || "").trim().includes(filterRoom));
+      }
+
+      if (filterMonth) {
+        rows = rows.filter(row => String(row.cost_date || "").startsWith(filterMonth));
+      }
+
+      if (filterStatus) {
+        rows = rows.filter(row => {
+          const status = String(row.booking_status || "").toLowerCase();
+          return filterStatus === "active" ? status === "active" : status !== "active";
+        });
+      }
+
+      updateSummary(rows);
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">ไม่พบรายการตามเงื่อนไขที่เลือก</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => {
+        const status = getBookingStatus(row);
+        const manage = isAdmin()
+          ? `<button class="btn btn-danger" onclick="deleteOtherCost('${row.id}')">ลบ</button>`
+          : `<span class="muted">-</span>`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(row.room_number || "-")}</td>
+            <td>${escapeHtml(row.tenant_name || "-")}</td>
+            <td><span class="pill ${status.className}">${status.label}</span></td>
+            <td>${dateText(row.cost_date)}</td>
+            <td>${escapeHtml(monthText(row.year, row.month))}</td>
+            <td class="money">${money(row.amount)}</td>
+            <td class="desc">${escapeHtml(row.description || "-")}</td>
+            <td>${manage}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("costDate").value = todayStr();
+      document.getElementById("filterMonth").value = todayStr().slice(0, 7);
+      await getCurrentUserRole();
+      await loadActiveRooms();
+      await renderOtherCosts();
+    });
+  </script>
+</body>
+</html>
+
+

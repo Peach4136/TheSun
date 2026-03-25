@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>THE SUN</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <style>
+    :root {
+      --primary: #26457a;
+      --primary-soft: #4f6aa6;
+      --accent-gold: #f3cf88;
+      --white: #ffffff;
+      --frame-purple: #b96bff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      color: var(--white);
+      padding: 16px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("main_image/background.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -2;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    button {
+      width: min(70%, 60%);
+      max-width: 90vw;
+      padding: clamp(10px, 1.4vh, 14px);
+      font-size: clamp(14px, 2.4vw, 18px);
+      border-radius: 0;
+      border: 2px solid #655e44;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #fdfdfd;
+      color: #333333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(101, 92, 65, 0.35);
+      background: #94724b;
+      color: #fff;
+    }
+
+    .logout-btn {
+      background: #b93636;
+      color: white;
+      border: none;
+    }
+
+    .logout-btn:hover {
+      background: #8f2525;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="btn-group">
+      <button onclick="goMonthly()">ห้องเช่ารายเดือน</button>
+      <button onclick="goDaily()">ห้องเช่ารายวัน</button>
+      <button onclick="goRoomPlan()">แผนผังห้อง</button>
+      <button onclick="location.href='settings.html'">ตั้งค่าระบบ</button>
+      <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <script>
+    const sb = window.getSupabaseClient();
+
+    async function checkSession() {
+      const { data, error } = await sb.auth.getSession();
+
+      if (error || !data.session) {
+        window.location.href = "index.html";
+      }
+    }
+
+    function goMonthly() {
+      window.location.href = "monthly_home.html";
+    }
+
+    function goDaily() {
+      window.location.href = "daily_home.html";
+    }
+
+    function goRoomPlan() {
+      window.location.href = "room_plan.html?mode=view&return_to=home.html";
+    }
+
+    async function logout() {
+      try {
+        const { error } = await sb.auth.signOut();
+
+        if (error) {
+          console.error("Logout error:", error);
+          alert("ออกจากระบบไม่สำเร็จ: " + error.message);
+          return;
+        }
+
+        localStorage.clear();
+        sessionStorage.clear();
+
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error("Unexpected logout error:", err);
+        alert("เกิดข้อผิดพลาดขณะออกจากระบบ");
+      }
+    }
+
+    checkSession();
+  </script>
+
+</body>
+</html>
+

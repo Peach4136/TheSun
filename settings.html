@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ตั้งค่าระบบ</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    .page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .back-btn {
+      padding: 10px 18px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0d2c0;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #7b4a23;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 6px;
+      border: 1px solid #ccbba7;
+    }
+
+    button.save-btn {
+      margin-top: 16px;
+      padding: 10px;
+      width: 100%;
+      background: #a66a2b;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <button class="back-btn" onclick="location.href='home.html'">← กลับ</button>
+
+  <div class="card">
+    <h2>ตั้งค่าอัตราค่าน้ำ / ค่าไฟ</h2>
+
+    <label>ค่าน้ำต่อหน่วย (บาท)</label>
+    <input type="number" id="waterRate" step="0.01">
+
+    <label>ค่าไฟต่อหน่วย (บาท)</label>
+    <input type="number" id="electricRate" step="0.01">
+
+    <label>เลขมิเตอร์น้ำสูงสุด (ก่อนวนกลับ 0)</label>
+    <input type="number" id="waterMeterMax" step="0.1" placeholder="เช่น 9999.9 หรือ 99999.9">
+    <div style="font-size:12px; color:#888; margin-top:4px;">เช่น ถ้ามิเตอร์แสดง 0-9999.9 ให้ใส่ 9999.9</div>
+
+    <label>เลขมิเตอร์ไฟสูงสุด (ก่อนวนกลับ 0)</label>
+    <input type="number" id="electricMeterMax" step="0.1" placeholder="เช่น 9999.9 หรือ 99999.9">
+    <div style="font-size:12px; color:#888; margin-top:4px;">เช่น ถ้ามิเตอร์แสดง 0-99999.9 ให้ใส่ 99999.9</div>
+
+    <label>เงินประกัน (มัดจำ) เริ่มต้น (บาท)</label>
+    <input type="number" id="defaultDeposit" step="1" placeholder="เช่น 3000">
+    <div style="font-size:12px; color:#888; margin-top:4px;">ใช้เป็นค่าเริ่มต้นเมื่อเพิ่มผู้เช่ารายเดือนใหม่</div>
+
+    <button class="save-btn" onclick="saveSettings()">บันทึก</button>
+
+    <div id="message"></div>
+  </div>
+
+</div>
+
+<script>
+  const db = window.getSupabaseClient();
+
+  async function loadSettings() {
+    const { data, error } = await db
+      .from("utility_settings")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (error) {
+      document.getElementById("message").textContent = "โหลดค่าไม่สำเร็จ";
+      return;
+    }
+
+    document.getElementById("waterRate").value = data.water_rate || 0;
+    document.getElementById("electricRate").value = data.electric_rate || 0;
+    document.getElementById("waterMeterMax").value = data.water_meter_max || 9999.9;
+    document.getElementById("electricMeterMax").value = data.electric_meter_max || 9999.9;
+    document.getElementById("defaultDeposit").value = data.default_deposit || 3000;
+  }
+
+  async function saveSettings() {
+    const water = Number(document.getElementById("waterRate").value || 0);
+    const electric = Number(document.getElementById("electricRate").value || 0);
+    const msg = document.getElementById("message");
+
+    const waterMax = Number(document.getElementById("waterMeterMax").value || 9999.9);
+    const electricMax = Number(document.getElementById("electricMeterMax").value || 9999.9);
+    const defaultDeposit = Number(document.getElementById("defaultDeposit").value || 3000);
+
+    const { error } = await db
+      .from("utility_settings")
+      .update({
+        water_rate: water,
+        electric_rate: electric,
+        water_meter_max: waterMax,
+        electric_meter_max: electricMax,
+        default_deposit: defaultDeposit,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", 1);
+
+    if (error) {
+      msg.style.color = "red";
+      msg.textContent = "บันทึกไม่สำเร็จ: " + error.message;
+      return;
+    }
+
+    msg.style.color = "green";
+    msg.textContent = "บันทึกเรียบร้อย";
+  }
+
+  loadSettings();
+</script>
+
+</body>
+</html>
+

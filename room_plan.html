@@ -1,0 +1,1028 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>แผนผังห้อง (Room Plan)</title>
+  <script src="date-format.js"></script>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 24px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-sizing: border-box;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      color: #7b4a23;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,.18);
+      transition: background .15s ease, transform .12s ease, box-shadow .15s ease;
+    }
+
+    .back-btn span.arrow {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .back-btn:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,.2);
+    }
+
+    .print-btn {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      background: #2b3a67;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,.18);
+      transition: background .15s ease, transform .12s ease, box-shadow .15s ease;
+    }
+
+    .print-btn:hover {
+      background: #1f2a4d;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,.2);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+      padding: 0 24px 32px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.08);
+      padding: 16px 18px 20px;
+      border: 1px solid #e0d2c0;
+    }
+
+    .print-header {
+      display: none;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .print-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #2b3a67;
+      margin-bottom: 4px;
+    }
+
+    .print-datetime {
+      font-size: 13px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: #2b3a67;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .info-bar {
+      margin: 10px 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #eef7ff;
+      border: 1px solid rgba(31,77,122,.15);
+      color: #1f4d7a;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .error-bar {
+      margin: 10px 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #ffeaea;
+      border: 1px solid rgba(183,28,28,.15);
+      color: #b71c1c;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.4;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 12px;
+      margin: 8px 0 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+
+    .legend-free { background: #fff; }
+    .legend-reserved { background: #ff9800; }
+    .legend-daily { background: #2196f3; }
+    .legend-monthly { background: #43a047; }
+    .legend-maint { background: #e53935; }
+    .legend-lock { background: #eeeeee; border-color: #c9c9c9; }
+
+    .floors {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .floor-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 4px;
+      color: #555;
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(60px,1fr));
+      gap: 6px;
+    }
+
+    .room-btn {
+      border-radius: 10px;
+      padding: 6px 4px;
+      border: 1px solid #d0d4da;
+      background: #fff;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      line-height: 1.3;
+      min-height: 58px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: .15s;
+      user-select: none;
+    }
+
+    .room-number {
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .room-sub {
+      font-size: 11px;
+      color: #555;
+    }
+
+    .room-type-tag {
+      font-size: 10px;
+      margin-top: 2px;
+      font-weight: 800;
+    }
+
+    .room-free {
+      background: #fff;
+      color: #333;
+    }
+
+    .room-reserved {
+      background: #ff9800;
+      color: #fff;
+      border-color: #ef6c00;
+    }
+
+    .room-daily {
+      background: #2196f3;
+      color: #fff;
+      border-color: #1976d2;
+    }
+
+    .room-monthly {
+      background: #43a047;
+      color: #fff;
+      border-color: #2e7d32;
+    }
+
+    .room-maint {
+      background: #e53935;
+      color: #fff;
+      border-color: #c62828;
+    }
+
+    .room-own_reserved {
+      background: #00897b;
+      color: #fff;
+      border-color: #00695c;
+    }
+
+    .room-late {
+      background: #e65100;
+      color: #fff;
+      border-color: #bf360c;
+    }
+
+    .room-turnover {
+      background: #2196f3;
+      color: #fff;
+      border-color: #1565c0;
+      position: relative;
+      overflow: hidden;
+    }
+    .room-turnover::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 0 22px 22px;
+      border-color: transparent transparent #ff9800 transparent;
+    }
+    .room-turnover .room-number,
+    .room-turnover .room-sub,
+    .room-turnover .room-type-tag {
+      text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+      position: relative;
+    }
+
+    .room-locked {
+      cursor: not-allowed !important;
+    }
+
+    .room-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+
+    .room-locked:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    @media (max-width: 900px) {
+      header { padding: 16px 16px 6px; }
+      .page { padding: 0 16px 24px; }
+      .room-grid { grid-template-columns: repeat(5, minmax(60px,1fr)); }
+      .print-btn { margin-left: 0; }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      header,
+      .info-bar,
+      .error-bar {
+        display: none !important;
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+
+      .print-header {
+        display: block;
+      }
+
+      .room-grid {
+        gap: 4px;
+      }
+
+      .room-btn {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <button class="back-btn" id="backBtn"><span class="arrow">&larr;</span>กลับ</button>
+    <h1>แผนผังห้องพัก</h1>
+    <button class="print-btn" type="button" onclick="printRoomPlan()">🖨 พิมพ์</button>
+  </header>
+
+  <div class="page">
+    <div class="card">
+      <div class="print-header">
+        <div class="print-title">แผนผังห้องพัก</div>
+        <div class="print-datetime" id="printDateTime">พิมพ์เมื่อ: -</div>
+      </div>
+
+      <h2>
+        ผังห้องพัก
+        <span id="modeText" style="font-size:12px; font-weight:800; color:#777;">
+          ดูสถานะห้อง
+        </span>
+      </h2>
+
+      <div class="card-subtitle" id="subtitle">
+        หน้านี้ใช้สำหรับดูสถานะห้องพักเท่านั้น
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:end; margin:10px 0 14px;">
+        <div>
+          <label for="viewDate" style="display:block; font-size:12px; font-weight:800; color:#666; margin-bottom:4px;">
+            วันที่ที่ต้องการดูสถานะห้อง
+          </label>
+          <input
+            id="viewDate"
+            type="date"
+            style="padding:8px 10px; border:1px solid #d8c7b2; border-radius:8px; font-size:14px; color:#6b3b1c; background:#fff;"
+          />
+        </div>
+
+        <button
+          type="button"
+          id="todayBtn"
+          style="padding:8px 14px; border:none; border-radius:999px; background:#2b3a67; color:#fff; font-weight:800; cursor:pointer;"
+        >
+          วันนี้
+        </button>
+
+        <div
+          id="selectedDateText"
+          style="font-size:13px; font-weight:800; color:#2b3a67; background:#eef4ff; padding:8px 12px; border-radius:999px;"
+        >
+          วันที่แสดงผล: -
+        </div>
+      </div>
+      <div id="infoBar" class="info-bar"></div>
+      <div id="errorBar" class="error-bar"></div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color legend-free"></div><span>ว่าง</span></div>
+        <div class="legend-item"><div class="legend-color legend-reserved"></div><span>จองไว้</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#e65100; border-color:#bf360c;"></div><span>เลทเช็คเอาท์</span></div>
+        <div class="legend-item"><div class="legend-color legend-daily"></div><span>เข้าพักรายวัน</span></div>
+        <div class="legend-item"><div class="legend-color legend-monthly"></div><span>เช่ารายเดือน</span></div>
+        <div class="legend-item"><div class="legend-color legend-maint"></div><span>อยู่ระหว่างซ่อม</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#00897b;border-color:#00695c;"></div><span>จองไว้ (การจองนี้)</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#2196f3 50%,#ff9800 50%);"></div><span>เช็คเอาท์/เข้าใหม่วันนี้</span></div>
+        <div class="legend-item"><div class="legend-color legend-lock"></div><span>กดไม่ได้</span></div>
+      </div>
+
+      <div class="floors" id="floorContainer"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    let roomRowByNumber = {};
+    let floorsFromDb = [];
+    let dailyOccupiedDb = {};
+    let monthlyOccupiedDb = {};
+    let reservedDb = {};
+    let pageMode = "view";
+    let selectedDate = "";
+
+    function showInfo(msg) {
+      const el = document.getElementById("infoBar");
+      el.style.display = "block";
+      el.textContent = msg;
+    }
+
+    function hideInfo() {
+      const el = document.getElementById("infoBar");
+      el.style.display = "none";
+      el.textContent = "";
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("errorBar");
+      el.style.display = "block";
+      el.textContent = msg;
+    }
+
+    function hideError() {
+      const el = document.getElementById("errorBar");
+      el.style.display = "none";
+      el.textContent = "";
+    }
+
+    function getQueryParam(key) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(key);
+    }
+
+    function getReturnTo() {
+      return getQueryParam("return_to") || "";
+    }
+
+    function getReservationId() {
+      return getQueryParam("reservation_id") || "";
+    }
+
+    function getMode() {
+      return getQueryParam("mode") || "";
+    }
+
+    function getTodayString() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function formatThaiDate(dateStr) {
+      if (!dateStr) return "-";
+      const d = new Date(dateStr + "T00:00:00");
+      if (isNaN(d.getTime())) return dateStr;
+      return formatDisplayDate(dateStr);
+    }
+
+    function updateSelectedDateText() {
+      const el = document.getElementById("selectedDateText");
+      if (!el) return;
+      el.textContent = `วันที่แสดงผล: ${formatThaiDate(selectedDate)}`;
+    }
+
+    function setupDateControls() {
+      const input = document.getElementById("viewDate");
+      const todayBtn = document.getElementById("todayBtn");
+
+      selectedDate = getQueryParam("date") || getTodayString();
+      input.value = selectedDate;
+      updateSelectedDateText();
+
+      input.addEventListener("change", async () => {
+        selectedDate = input.value || getTodayString();
+        updateSelectedDateText();
+        await refreshStatusesAndRender();
+      });
+
+      todayBtn.addEventListener("click", async () => {
+        selectedDate = getTodayString();
+        input.value = selectedDate;
+        updateSelectedDateText();
+        await refreshStatusesAndRender();
+      });
+    }
+
+    function setupNav() {
+      const backBtn = document.getElementById("backBtn");
+      backBtn.onclick = () => {
+        const rt = getReturnTo();
+
+        if (rt) {
+          location.href = rt;
+          return;
+        }
+
+        if (document.referrer) {
+          history.back();
+          return;
+        }
+
+        location.href = "home.html";
+      };
+    }
+
+    function getFloorFromRoomNumber(roomNumber) {
+      const rn = String(roomNumber || "").trim();
+      if (!rn) return "";
+      return rn.charAt(0);
+    }
+
+    function buildFloorsFromRooms(data) {
+      const floorMap = {};
+
+      (data || []).forEach(r => {
+        const rn = String(r.room_number || "").trim();
+        if (!rn) return;
+
+        const floorKey = getFloorFromRoomNumber(rn);
+        if (!floorKey) return;
+
+        if (!floorMap[floorKey]) floorMap[floorKey] = [];
+        floorMap[floorKey].push(rn);
+      });
+
+      return Object.keys(floorMap)
+        .sort((a, b) => Number(b) - Number(a))
+        .map(floorKey => ({
+          label: `ชั้น ${floorKey}`,
+          rooms: floorMap[floorKey].sort((a, b) => Number(a) - Number(b))
+        }));
+    }
+
+    async function loadRoomsFromDb() {
+      const { data, error } = await db
+        .from("rooms")
+        .select("id, room_number, status, room_type")
+        .order("room_number", { ascending: true });
+
+      if (error) {
+        showError("โหลด rooms ไม่สำเร็จ\n" + (error.message || ""));
+        roomRowByNumber = {};
+        floorsFromDb = [];
+        return false;
+      }
+
+      const rowMap = {};
+      (data || []).forEach(r => {
+        const rn = String(r.room_number || "").trim();
+        if (!rn) return;
+        rowMap[rn] = r;
+      });
+
+      roomRowByNumber = rowMap;
+      floorsFromDb = buildFloorsFromRooms(data || []);
+      return true;
+    }
+
+    async function setupPageMode() {
+      const rid = getReservationId();
+      const mode = getMode();
+
+      if (mode === "view") {
+        pageMode = "view";
+        showInfo(`โหมดดูแผนผังห้อง — แสดงสถานะตามวันที่ ${formatThaiDate(selectedDate)}`);
+        return true;
+      }
+
+      if (mode === "monthly") {
+        pageMode = "monthly_select";
+        showInfo(`โหมดเลือกห้องรายเดือน — เลือกได้เฉพาะห้องว่าง ณ วันที่ ${formatThaiDate(selectedDate)}`);
+        return true;
+      }
+
+      if (mode === "reserve") {
+        pageMode = "reserve_select";
+        showInfo(`โหมดเลือกห้องเพื่อจองล่วงหน้า — เลือกได้เฉพาะห้องว่าง ณ วันที่ ${formatThaiDate(selectedDate)}`);
+        return true;
+      }
+
+      if (rid) {
+        pageMode = "select";
+        showInfo(`โหมดเลือกห้องสำหรับ Reservation — เลือกได้เฉพาะห้องว่าง ณ วันที่ ${formatThaiDate(selectedDate)}`);
+        return true;
+      }
+
+      pageMode = "view";
+      showInfo(`เปิดหน้าแบบไม่มี reservation_id — ขณะนี้เป็นโหมดดูอย่างเดียว ณ วันที่ ${formatThaiDate(selectedDate)}`);
+      return true;
+    }
+
+    function computeEndDate(startStr, monthsStr) {
+      if (!startStr || !monthsStr) return "";
+      const months = Number(monthsStr);
+      if (Number.isNaN(months) || months <= 0) return "";
+      const d = new Date(startStr + "T00:00:00");
+      if (isNaN(d.getTime())) return "";
+      // Keep same day — rent starts 13th, ends 13th next month
+      const day = d.getDate();
+      d.setMonth(d.getMonth() + months);
+      d.setDate(day); // re-set in case JS rolled over (e.g. Jan 31 → Mar 3)
+      return d.toISOString().split("T")[0];
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      const d = new Date(str + "T00:00:00");
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    async function loadDailyOccupiedFromDb() {
+      dailyOccupiedDb = {};
+
+      const { data, error } = await db
+        .from("reservations")
+        .select(`
+          check_in_date,
+          check_out_date,
+          status,
+          daily_checkins (
+            room_number,
+            is_active
+          )
+        `)
+        .eq("status", "checked_in");
+
+      if (error) {
+        console.warn("checked_in reservations read error:", error);
+        return;
+      }
+
+      const selected = parseDate(selectedDate);
+      if (!selected) return;
+
+      // Current hour in local time — used to decide if checkout date rooms are still occupied
+      const now = new Date();
+      const isViewingToday = selectedDate === getTodayString();
+      const currentHour = now.getHours();
+
+      (data || []).forEach(r => {
+        const start = parseDate(r.check_in_date);
+        const end = parseDate(r.check_out_date);
+        if (!start || !end) return;
+
+        const isCheckoutDate = selectedDate === r.check_out_date;
+
+        if (selected >= start && selected < end) {
+          // Normal occupied — within stay period
+          (r.daily_checkins || []).forEach(dc => {
+            if (dc.is_active === true) {
+              const rn = String(dc.room_number || "").trim();
+              if (rn) dailyOccupiedDb[rn] = true;
+            }
+          });
+        } else if (isCheckoutDate && isViewingToday) {
+          // Checkout date — mark as late if still active (regardless of time)
+          // Before noon: still normal "daily", after noon: "late"
+          (r.daily_checkins || []).forEach(dc => {
+            if (dc.is_active === true) {
+              const rn = String(dc.room_number || "").trim();
+              if (!rn) return;
+              if (currentHour >= 12) {
+                dailyOccupiedDb[rn] = "late"; // past noon, still not checked out
+              } else {
+                dailyOccupiedDb[rn] = true;   // before noon, normal occupied
+              }
+            }
+          });
+        }
+      });
+    }
+
+    async function loadReservedFromDb() {
+      reservedDb = {};
+
+      const currentReservationId = getReservationId();
+      const todayStr = getTodayString();
+
+      const { data, error } = await db
+        .from("reservations")
+        .select(`
+          id,
+          check_in_date,
+          check_out_date,
+          status,
+          reservation_rooms (
+            room_number
+          )
+        `)
+        .in("status", ["pending", "confirmed"]);
+
+      if (error) {
+        console.warn("reserved reservations read error:", error);
+        return;
+      }
+
+      const selected = parseDate(selectedDate);
+      if (!selected) return;
+
+      (data || []).forEach(r => {
+        const start = parseDate(r.check_in_date);
+        const end = parseDate(r.check_out_date);
+        if (!start || !end) return;
+
+        if (selected >= start && selected < end) {
+          (r.reservation_rooms || []).forEach(rr => {
+            const rn = String(rr.room_number || "").trim();
+            if (!rn) return;
+            // Rooms belonging to THIS reservation stay selectable (own_reserved)
+            if (currentReservationId && String(r.id) === String(currentReservationId)) {
+              reservedDb[rn] = "own";
+            } else {
+              // Mark if this reservation checks in today — used for turnover split colour
+              if (r.check_in_date === todayStr) {
+                reservedDb[rn] = "checkin_today";
+              } else {
+                reservedDb[rn] = reservedDb[rn] || "other";
+              }
+            }
+          });
+        }
+      });
+    }
+
+    async function loadMonthlyOccupiedFromDb() {
+      monthlyOccupiedDb = {};
+
+      const { data, error } = await db
+        .from("bookings")
+        .select("room_number, checkin_date, lease_duration")
+        .eq("rent_type", "monthly")
+        .eq("status", "active");
+
+      if (error) {
+        console.warn("bookings read error:", error);
+        return;
+      }
+
+      const selected = parseDate(selectedDate);
+      if (!selected) return;
+
+      (data || []).forEach(bk => {
+        const start = parseDate(bk.checkin_date);
+        const end = parseDate(computeEndDate(bk.checkin_date, bk.lease_duration));
+
+        if (!start || !end) return;
+
+        if (selected >= start && selected < end) {
+          const rn = String(bk.room_number || "").trim();
+          if (rn) monthlyOccupiedDb[rn] = true;
+        }
+      });
+    }
+
+    function getRoomStatus(roomNumber) {
+      const rn = String(roomNumber);
+      const roomRow = roomRowByNumber[rn] || null;
+
+      if (!roomRow) {
+        return {
+          rn,
+          type: "free",
+          roomRow: null,
+          roomType: "",
+          blocked: true
+        };
+      }
+
+      const dbStatus = String(roomRow.status || "vacant").toLowerCase();
+      const roomType = String(roomRow.room_type || "").trim();
+
+      const isMaint = dbStatus === "maintenance";
+      const dailyVal = dailyOccupiedDb[rn]; // true, "late", or undefined
+      const isDaily = dailyVal === true;
+      const isLate  = dailyVal === "late";
+      const isMonthly = !!monthlyOccupiedDb[rn];
+      const reservedVal = reservedDb[rn];
+      const isOwnReserved = reservedVal === "own";
+      const isOtherReserved = reservedVal === "other";
+      const isCheckinToday = reservedVal === "checkin_today";
+
+      let type = "free";
+
+      if (isMaint) type = "maint";
+      else if (isMonthly) type = "monthly";
+      // Turnover: current guest checking out today + new guest checking in today
+      else if ((isDaily || isLate) && isCheckinToday) type = "turnover";
+      else if (isLate)  type = "late";
+      else if (isDaily) type = "daily";
+      else if (isOwnReserved) type = "own_reserved";
+      else if (isCheckinToday) type = "reserved"; // checkin today but no current occupant
+      else if (isOtherReserved) type = "reserved";
+      else type = "free";
+
+      let blocked = false;
+      if (pageMode === "view") blocked = true;
+      else if (type === "own_reserved") blocked = false;
+      else blocked = type !== "free"; // turnover, late, daily, monthly, maint, reserved all blocked
+
+      return { rn, type, roomRow, roomType, blocked };
+    }
+
+    function renderFloorPlan() {
+      const container = document.getElementById("floorContainer");
+      container.innerHTML = "";
+
+      if (!floorsFromDb.length) {
+        container.innerHTML = '<div style="font-size:13px;color:#777;">ไม่พบข้อมูลห้องในตาราง rooms</div>';
+        return;
+      }
+
+      floorsFromDb.forEach(floor => {
+        const floorDiv = document.createElement("div");
+
+        const title = document.createElement("div");
+        title.className = "floor-title";
+        title.textContent = floor.label;
+        floorDiv.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "room-grid";
+
+        floor.rooms.forEach(roomNumber => {
+          const st = getRoomStatus(roomNumber);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "room-btn room-" + st.type;
+          btn.dataset.room = roomNumber;
+
+          let mainLabel = "ว่าง";
+          if (st.type === "own_reserved") mainLabel = "จองไว้ (คุณ)";
+          else if (st.type === "turnover") mainLabel = "เช็คเอาท์/เข้าใหม่";
+          else if (st.type === "late") mainLabel = "เลทเช็คเอาท์";
+          else if (st.type === "reserved") mainLabel = "จองไว้";
+          else if (st.type === "monthly") mainLabel = "รายเดือน";
+          else if (st.type === "daily") mainLabel = "รายวัน";
+          else if (st.type === "maint") mainLabel = "ซ่อม";
+
+          btn.innerHTML = `
+            <span class="room-number">${roomNumber}</span>
+            <span class="room-sub">${mainLabel}</span>
+            ${st.roomType ? `<span class="room-type-tag">${st.roomType}</span>` : ""}
+          `;
+
+          if (pageMode === "view") {
+            btn.disabled = true;
+            btn.classList.add("room-locked");
+          } else if (st.blocked) {
+            btn.disabled = true;
+            btn.classList.add("room-locked");
+          } else {
+            btn.addEventListener("click", () => onRoomClick(roomNumber));
+          }
+
+          grid.appendChild(btn);
+        });
+
+        floorDiv.appendChild(grid);
+        container.appendChild(floorDiv);
+      });
+    }
+
+    function onRoomClick(roomNumber) {
+      hideError();
+
+      if (!["select", "monthly_select", "reserve_select"].includes(pageMode)) {
+        showError("หน้านี้เป็นโหมดดูอย่างเดียว ไม่สามารถเลือกห้องได้");
+        return;
+      }
+
+      const rn = String(roomNumber);
+      const row = roomRowByNumber[rn] || null;
+
+      if (!row) {
+        showError("ห้องนี้ไม่มีในตาราง rooms");
+        return;
+      }
+
+      const roomType = String(row.room_type || "").trim();
+      if (!roomType) {
+        showError("ห้องนี้ไม่มี room_type ใน DB");
+        return;
+      }
+
+      const statusObj = getRoomStatus(rn);
+      if (statusObj.type !== "free" && statusObj.type !== "own_reserved") {
+        showError("ห้องนี้มีผู้ใช้งานอยู่แล้ว หรือยังไม่พร้อมใช้งาน");
+        return;
+      }
+
+      sessionStorage.setItem("picked_room_number", rn);
+      sessionStorage.setItem("picked_room_type", roomType);
+      sessionStorage.setItem("picked_room_date", selectedDate);
+
+      if (pageMode === "select") {
+        sessionStorage.setItem("picked_room_reservation_id", String(getReservationId() || ""));
+      } else {
+        sessionStorage.removeItem("picked_room_reservation_id");
+      }
+
+      const rt = getReturnTo();
+      if (rt) {
+        location.href = rt;
+      } else if (pageMode === "select") {
+        location.href = `daily_checkin.html?reservation_id=${encodeURIComponent(getReservationId() || "")}`;
+      } else {
+        history.back();
+      }
+    }
+
+    async function refreshStatusesAndRender() {
+      hideError();
+      await setupPageMode();
+      await loadDailyOccupiedFromDb();
+      await loadMonthlyOccupiedFromDb();
+      await loadReservedFromDb();
+      renderFloorPlan();
+    }
+
+    function printRoomPlan() {
+      const now = new Date();
+
+      document.getElementById("printDateTime").textContent =
+        `����������: ${formatDisplayDateTime(now, { includeSeconds: true })} | �ѹ����ʴ���: ${formatThaiDate(selectedDate)}`;
+      window.print();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      setupNav();
+      hideError();
+      hideInfo();
+      setupDateControls();
+
+      const rid = getReservationId();
+      const rt = getReturnTo();
+      const mode = getMode();
+      const subtitle = document.getElementById("subtitle");
+      const modeText = document.getElementById("modeText");
+
+      if (mode === "view") {
+        modeText.textContent = "ดูสถานะห้อง";
+        subtitle.textContent = "หน้านี้ใช้สำหรับดูสถานะห้องพักตามวันที่ที่เลือก";
+      } else if (mode === "monthly") {
+        modeText.textContent = "เลือกห้องรายเดือน";
+        subtitle.textContent = "คลิกห้องเพื่อเลือกห้องว่างสำหรับผู้เช่ารายเดือน ตามวันที่ที่เลือก";
+      } else if (mode === "reserve") {
+        modeText.textContent = "เลือกห้องเพื่อจอง";
+        subtitle.textContent = "คลิกห้องว่างเพื่อเลือกห้องสำหรับการจองล่วงหน้า";
+      } else if (rid && rt) {
+        modeText.textContent = "เลือกห้อง";
+        subtitle.textContent = "คลิกห้องว่างเพื่อเลือก → ระบบจะพากลับหน้าเช็คอินอัตโนมัติ";
+      } else if (rid) {
+        modeText.textContent = "เลือกห้อง";
+        subtitle.textContent = "คลิกห้องว่างเพื่อเลือก";
+      } else {
+        modeText.textContent = "ดูสถานะห้อง";
+        subtitle.textContent = "ไม่มี reservation_id — หน้านี้อยู่ในโหมดดูอย่างเดียว";
+      }
+
+      const okRooms = await loadRoomsFromDb();
+      if (!okRooms) {
+        renderFloorPlan();
+        return;
+      }
+
+      await refreshStatusesAndRender();
+    });
+  </script>
+</body>
+</html>
+
+
+

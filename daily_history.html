@@ -1,0 +1,1039 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ประวัติการเข้าพักรายวัน</title>
+  <script src="date-format.js"></script>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 24px 40px;
+      box-sizing: border-box;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .back-btn,
+    .print-btn,
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .back-btn,
+    .btn {
+      background: #a66a2b;
+      color: #fff;
+    }
+
+    .back-btn:hover,
+    .btn:hover {
+      background: #905825;
+      transform: translateY(-1px);
+    }
+
+    .print-btn {
+      background: #2b3a67;
+      color: #fff;
+    }
+
+    .print-btn:hover {
+      background: #1f2c50;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background: #565e64;
+    }
+
+    .title {
+      text-align: center;
+      margin-top: 26px;
+      margin-bottom: 20px;
+      font-size: 30px;
+      font-weight: 800;
+      color: #7b4a23;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px 18px 20px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0d2c0;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      color: #7b4a23;
+      font-size: 18px;
+      border-bottom: 1px solid #e7d8c6;
+      padding-bottom: 6px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .filter-box {
+      min-width: 220px;
+      flex: 1 1 220px;
+    }
+
+    .filter-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #4e311a;
+    }
+
+    .filter-box input,
+    .filter-box select {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccbba7;
+      font-size: 13px;
+      background: #fff;
+      color: #4e311a;
+      box-sizing: border-box;
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff1f1;
+      border: 1px solid #efc2c2;
+      color: #b42318;
+      font-size: 13px;
+      white-space: pre-line;
+    }
+
+    .print-meta {
+      display: none;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #7b6a57;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .summary-item {
+      background: #faf5ef;
+      border: 1px solid #e4d6c4;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #7b6a57;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #7b4a23;
+    }
+
+    .reservation-groups {
+      display: grid;
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    .reservation-group {
+      background: #fff;
+      border: 1px solid #e2d4c2;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .reservation-header {
+      background: #efe1d0;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e1cfba;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reservation-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #7b4a23;
+      margin: 0;
+    }
+
+    .reservation-sub {
+      font-size: 13px;
+      color: #7b6a57;
+      margin-top: 2px;
+    }
+
+    .reservation-count {
+      background: #fff8f0;
+      border: 1px solid #dfc7a9;
+      color: #7b4a23;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .reservation-body {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .info-box {
+      background: #fff;
+      border: 1px solid #eadcc9;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #7b4a23;
+      border-bottom: 1px solid #ecdfcf;
+      padding-bottom: 6px;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      align-items: start;
+    }
+
+    .info-label {
+      color: #7b6a57;
+      font-weight: 700;
+    }
+
+    .info-value {
+      color: #4e311a;
+      word-break: break-word;
+    }
+
+    .money {
+      font-weight: 800;
+      color: #2e6b3f;
+    }
+
+    .muted {
+      color: #7b6a57;
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: white;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tag-done {
+      background: #2b9c3f;
+    }
+
+    .tag-active {
+      background: #e67e22;
+    }
+
+    .tag-other {
+      background: #7f8c8d;
+    }
+
+    .room-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    .room-table th,
+    .room-table td {
+      border: 1px solid #e4d6c4;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .room-table th {
+      background: #f4e7d8;
+      font-weight: 800;
+      color: #6b3b1c;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .empty-box {
+      text-align: center;
+      padding: 28px 16px;
+      color: #7b6a57;
+      background: #fff;
+      border: 1px dashed #d7c5b1;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 16px 14px 28px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .reservation-title {
+        font-size: 18px;
+      }
+
+      .info-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .back-btn,
+      .print-btn,
+      .btn,
+      .filter-row,
+      .error-box {
+        display: none !important;
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .title {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 22px;
+        color: #000;
+      }
+
+      .card,
+      .reservation-group,
+      .info-box {
+        box-shadow: none;
+        border: 1px solid #bbb;
+      }
+
+      .print-meta {
+        display: block;
+      }
+
+      .reservation-header {
+        background: #eee !important;
+      }
+
+      .tag {
+        color: #000 !important;
+        background: #fff !important;
+        border: 1px solid #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-actions">
+      <button class="back-btn" onclick="location.href='daily_home.html'">
+        <span>&larr;</span> กลับเมนูรายวัน
+      </button>
+      <button class="print-btn" onclick="printDailyHistory()">🖨️ พิมพ์</button>
+    </div>
+
+    <div class="title">ประวัติการเข้าพัก (รายวัน)</div>
+
+    <div class="card">
+      <h2>ค้นหาและสรุปข้อมูล</h2>
+
+      <div class="print-meta" id="printMeta"></div>
+
+      <div class="filter-row">
+        <div class="filter-box">
+          <label>ค้นหาโดยห้อง / ชื่อลูกค้า / รหัสจอง / เบอร์โทร / Reservation ID</label>
+          <input type="text" id="searchBox" placeholder="เช่น 201 / คุณสมชาย / RSV001 / 089... / 12">
+        </div>
+
+        <div class="filter-box">
+          <label>สถานะ</label>
+          <select id="statusFilter">
+            <option value="">ทั้งหมด</option>
+            <option value="active">กำลังพัก</option>
+            <option value="done">เช็คเอาท์แล้ว</option>
+            <option value="cancelled">ยกเลิกแล้ว</option>
+          </select>
+        </div>
+
+        <div class="filter-box">
+          <label>Check-in ตั้งแต่</label>
+          <input type="date" id="dateFrom">
+        </div>
+
+        <div class="filter-box">
+          <label>Check-in ถึง</label>
+          <input type="date" id="dateTo">
+        </div>
+
+        <div class="filter-box" style="flex:0 0 auto; min-width:unset;">
+          <button class="btn" id="searchBtn" type="button">ค้นหา</button>
+        </div>
+
+        <div class="filter-box" style="flex:0 0 auto; min-width:unset;">
+          <button class="btn btn-secondary" id="resetBtn" type="button">ล้างตัวกรอง</button>
+        </div>
+      </div>
+
+      <div id="errorBox" class="error-box"></div>
+
+      <div class="summary-bar">
+        <div class="summary-item">
+          <div class="summary-label">Reservation ทั้งหมด</div>
+          <div class="summary-value" id="countAll">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Reservation ที่ยังมีห้องกำลังพัก</div>
+          <div class="summary-value" id="countActive">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Reservation ที่เช็คเอาท์หมดแล้ว</div>
+          <div class="summary-value" id="countDone">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">ยกเลิกแล้ว</div>
+          <div class="summary-value" id="countCancelled" style="color:#b02a37;">0</div>
+        </div>
+      </div>
+
+      <div class="note">
+        * หน้านี้แยกข้อมูลตาม <b>Reservation ID</b> เพื่อให้ดูการเงินได้ตรงกับการจอง<br>
+        * ตารางห้องด้านล่างจะแสดง <b>ราคาจริงของแต่ละห้อง</b> จาก daily_checkins<br>
+        * ถ้า Reservation มีหลายห้อง ระบบจะรวมไว้ในบล็อกเดียวกัน
+      </div>
+    </div>
+
+    <div id="reservationGroups" class="reservation-groups"></div>
+  <div id="loadMoreWrap" style="text-align:center; margin-top:16px; display:none;">
+    <button class="btn" id="loadMoreBtn" type="button">โหลดเพิ่มเติม</button>
+    <div class="note" id="loadMoreNote" style="margin-top:6px;"></div>
+  </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    const PAGE_SIZE = 20;
+    let currentOffset = 0;
+    let hasMore = false;
+    let loadedGroups = [];
+
+    function defaultDateFrom() {
+      // Default: 1 year back so recent history is always visible
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - 1);
+      return d.toISOString().slice(0, 10);
+    }
+    function todayISO() {
+      const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    }
+
+    function showError(msg) {
+      const box = document.getElementById("errorBox");
+      box.style.display = "block";
+      box.textContent = msg || "";
+    }
+
+    function hideError() {
+      const box = document.getElementById("errorBox");
+      box.style.display = "none";
+      box.textContent = "";
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "-";
+      return formatDisplayDateTime(value);
+    }
+
+    function formatDateOnly(value) {
+      if (!value) return "-";
+      return formatDisplayDate(value);
+    }
+
+    function formatMoney(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function getDailyStatusTag(hasActiveRooms) {
+      if (hasActiveRooms) {
+        return '<span class="tag tag-active">กำลังพัก</span>';
+      }
+      return '<span class="tag tag-done">เช็คเอาท์แล้ว</span>';
+    }
+
+    function paymentTypeLabel(value) {
+      const v = String(value || "").trim().toLowerCase();
+
+      if (v === "cash" || v === "เงินสด") return "เงินสด";
+      if (v === "transfer" || v === "โอนเงิน" || v === "โอน") return "โอนเงิน";
+      if (v === "card" || v === "บัตร") return "บัตร";
+      if (v === "paid" || v === "ชำระแล้ว") return "ชำระแล้ว";
+      if (v === "unpaid" || v === "ยังไม่ชำระ") return "ยังไม่ชำระ";
+
+      return value || "-";
+    }
+
+    function splitCheckinNote(value) {
+      const raw = String(value || "");
+      const lines = raw.split(/\r?\n/);
+      let paymentDetail = "";
+      const plainLines = [];
+
+      lines.forEach(line => {
+        const trimmed = String(line || "").trim();
+        if (trimmed.startsWith("[payment_detail]")) {
+          paymentDetail = trimmed.replace("[payment_detail]", "").trim();
+          return;
+        }
+        if (trimmed) plainLines.push(trimmed);
+      });
+
+      return {
+        plainNote: plainLines.join("\n").trim(),
+        paymentDetail: paymentDetail.trim()
+      };
+    }
+
+    function getGroupPaymentDetail(rows) {
+      const values = Array.from(new Set(
+        (rows || [])
+          .map(row => splitCheckinNote(row.note).paymentDetail)
+          .filter(Boolean)
+      ));
+      return values.length ? values.join(" | ") : "-";
+    }
+
+    function printDailyHistory() {
+      const now = new Date();
+      document.getElementById("printMeta").textContent =
+        "พิมพ์เมื่อ: " + formatDisplayDateTime(now);
+      window.print();
+    }
+
+    async function fetchPage(offset, append = false) {
+      hideError();
+      if (!append) {
+        document.getElementById("reservationGroups").innerHTML =
+          '<div class="empty-box">กำลังโหลด...</div>';
+        loadedGroups = [];
+      }
+
+      const searchText = (document.getElementById("searchBox").value || "").trim().toLowerCase();
+      const statusFilter = document.getElementById("statusFilter").value;
+      const dateFrom = document.getElementById("dateFrom").value || defaultDateFrom();
+      const dateTo = document.getElementById("dateTo").value || todayISO();
+
+      // ── 1. Fetch live reservations (checked_in OR checked_out) ──────────────
+      // We include checked_in here because a booking with 2 rooms where 1 is
+      // checked out and 1 still active stays as "checked_in" in the DB.
+      // We derive the real status from daily_checkins.is_active after fetching.
+      let resQuery = db
+        .from("reservations")
+        .select("id, reservation_code, customer_name, customer_phone, check_in_date, check_out_date, status, note, total_rooms, total_deposit, total_price, payment_type, checkout_note, extra_payment_type, extra_payment_detail, checkout_extra", { count: "exact" })
+        .in("status", ["checked_in", "checked_out"])
+        .order("check_in_date", { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      // Date filters only applied if filled in
+      if (dateFrom) resQuery = resQuery.gte("check_in_date", dateFrom);
+      if (dateTo)   resQuery = resQuery.lte("check_in_date", dateTo);
+
+      if (searchText) resQuery = resQuery.or(
+        `customer_name.ilike.%${searchText}%,customer_phone.ilike.%${searchText}%,reservation_code.ilike.%${searchText}%`
+      );
+
+      const { data: resData, error: resError, count } = await resQuery;
+      console.log("reservations query result:", { resData, resError, count, dateFrom, dateTo });
+      if (resError) {
+        showError("โหลดข้อมูลไม่สำเร็จ\n" + (resError.message || ""));
+        document.getElementById("reservationGroups").innerHTML =
+          '<div class="empty-box">โหลดข้อมูลผิดพลาด: ' + (resError.message || "") + '</div>';
+        return;
+      }
+
+      // ── 2. Fetch daily_checkins for those reservations ──────────────────────
+      const resIds = (resData || []).map(r => r.id);
+      let checkinsByRes = {};
+      if (resIds.length > 0) {
+        const { data: checkinData, error: checkinError } = await db
+          .from("daily_checkins")
+          .select("id, reservation_id, room_number, room_type, guest_name, check_in_at, check_out_at, is_active, actual_price_per_night, actual_total_price, payment_type, note, created_at, checkout_extra, checkout_refund, checkout_payment_type, checkout_payment_detail")
+          .in("reservation_id", resIds)
+          .order("check_in_at", { ascending: true });
+
+        if (checkinError) {
+          showError("โหลดข้อมูลห้องไม่สำเร็จ\n" + (checkinError.message || ""));
+          return;
+        }
+        (checkinData || []).forEach(ci => {
+          if (!checkinsByRes[ci.reservation_id]) checkinsByRes[ci.reservation_id] = [];
+          checkinsByRes[ci.reservation_id].push(ci);
+        });
+      }
+
+      // Build live groups — derive room status from daily_checkins.is_active
+      let liveGroups = (resData || []).map(res => {
+        const rows = checkinsByRes[res.id] || [];
+        const hasActiveRooms = rows.some(r => r.is_active === true);
+        const totalActualPrice = rows.reduce((sum, r) => sum + (Number(r.actual_total_price) || 0), 0);
+        return {
+          groupType: "live",
+          reservationId: res.id,
+          reservation: res,
+          rows,
+          hasActiveRooms,
+          totalActualPrice,
+          sortDate: res.check_in_date || ""
+        };
+      });
+
+      // Apply status filter based on real room state
+      if (statusFilter === "active")    liveGroups = liveGroups.filter(g => g.hasActiveRooms);
+      if (statusFilter === "done")      liveGroups = liveGroups.filter(g => !g.hasActiveRooms);
+      if (statusFilter === "cancelled") liveGroups = []; // show only cancelled when that filter is selected
+
+      // ── 3. Fetch cancelled reservations from reservation_history ────────────
+      let cancelledGroups = [];
+      if (statusFilter !== "active" && statusFilter !== "done") {
+        let histQuery = db
+          .from("reservation_history")
+          .select("id, original_reservation_id, reservation_code, customer_name, customer_phone, check_in_date, check_out_date, status_before_archive, archive_action, archived_at, note, room_summary, total_price, total_deposit, payment_type")
+          .in("archive_action", ["cancelled", "auto_cancelled_no_show"])
+          .order("archived_at", { ascending: false })
+          .limit(PAGE_SIZE);
+
+        if (dateFrom) histQuery = histQuery.gte("check_in_date", dateFrom);
+        if (dateTo)   histQuery = histQuery.lte("check_in_date", dateTo);
+
+        if (searchText) histQuery = histQuery.or(
+          `customer_name.ilike.%${searchText}%,customer_phone.ilike.%${searchText}%,reservation_code.ilike.%${searchText}%`
+        );
+
+        const { data: histData, error: histError } = await histQuery;
+        if (!histError && histData) {
+          cancelledGroups = histData.map(h => ({
+            groupType: "cancelled",
+            reservationId: h.original_reservation_id || h.id,
+            reservation: {
+              reservation_code: h.reservation_code,
+              customer_name: h.customer_name,
+              customer_phone: h.customer_phone,
+              check_in_date: h.check_in_date,
+              check_out_date: h.check_out_date,
+              status: "cancelled",
+              note: h.note,
+              payment_type: h.payment_type,
+              total_price: h.total_price,
+              total_deposit: h.total_deposit,
+              archive_action: h.archive_action,
+              archived_at: h.archived_at,
+              room_summary: h.room_summary
+            },
+            rows: [],
+            hasActiveRooms: false,
+            totalActualPrice: h.total_price || 0,
+            sortDate: h.check_in_date || ""
+          }));
+        }
+      }
+
+      // ── 4. Merge, sort by check_in_date desc, take latest 30 per load ───────
+      let newGroups = [...liveGroups, ...cancelledGroups]
+        .sort((a, b) => (b.sortDate > a.sortDate ? 1 : b.sortDate < a.sortDate ? -1 : 0))
+        .slice(0, PAGE_SIZE);
+
+      if (append) {
+        loadedGroups = loadedGroups.concat(newGroups);
+      } else {
+        loadedGroups = newGroups;
+      }
+
+      hasMore = (offset + PAGE_SIZE) < (count || 0);
+      currentOffset = offset + (resData || []).length;
+
+      renderSummary(loadedGroups, count);
+      renderGroups(loadedGroups);
+
+      const wrap = document.getElementById("loadMoreWrap");
+      const noteEl = document.getElementById("loadMoreNote");
+      if (hasMore) {
+        wrap.style.display = "block";
+        noteEl.textContent = `แสดง ${loadedGroups.length} จาก ${count} รายการ`;
+      } else {
+        wrap.style.display = "none";
+      }
+    }
+
+    async function loadHistory() {
+      currentOffset = 0;
+      loadedGroups = [];
+      await fetchPage(0, false);
+    }
+
+    function renderSummary(groupedList, totalCount) {
+      document.getElementById("countAll").textContent = totalCount != null ? totalCount : groupedList.length;
+      const activeCount = groupedList.filter(g => g.groupType !== "cancelled" && g.hasActiveRooms).length;
+      const doneCount = groupedList.filter(g => g.groupType !== "cancelled" && !g.hasActiveRooms).length;
+      const cancelledCount = groupedList.filter(g => g.groupType === "cancelled").length;
+      document.getElementById("countActive").textContent = activeCount;
+      document.getElementById("countDone").textContent = doneCount;
+      document.getElementById("countCancelled").textContent = cancelledCount;
+    }
+
+    function renderGroups(groupedList) {
+      const container = document.getElementById("reservationGroups");
+
+      if (!groupedList.length) {
+        container.innerHTML = `<div class="empty-box">ไม่พบข้อมูล</div>`;
+        return;
+      }
+
+      container.innerHTML = groupedList.map(group => {
+        const reservation = group.reservation || {};
+
+        // ── Cancelled reservation — simplified view ──────────────────────────
+        if (group.groupType === "cancelled") {
+          const actionLabel = reservation.archive_action === "auto_cancelled_no_show"
+            ? "ยกเลิกอัตโนมัติ (ไม่มา)"
+            : "ยกเลิกโดยแอดมิน";
+          return `
+            <div class="reservation-group" style="border-color:#f5c6c6;">
+              <div class="reservation-header" style="background:#fdeaea;">
+                <div>
+                  <div class="reservation-title" style="color:#b02a37;">
+                    ❌ ${reservation.reservation_code || group.reservationId}
+                  </div>
+                  <div class="reservation-sub">
+                    ลูกค้า: ${reservation.customer_name || "-"} |
+                    โทร: ${reservation.customer_phone || "-"} |
+                    ${formatDateOnly(reservation.check_in_date)} → ${formatDateOnly(reservation.check_out_date)}
+                  </div>
+                </div>
+                <span class="tag" style="background:#b02a37; font-size:11px; padding:4px 10px;">${actionLabel}</span>
+              </div>
+              <div class="reservation-body">
+                <div class="section-grid">
+                  <div class="info-box">
+                    <h3>ข้อมูลการจอง</h3>
+                    <div class="info-row"><div class="info-label">ชื่อลูกค้า</div><div class="info-value">${reservation.customer_name || "-"}</div></div>
+                    <div class="info-row"><div class="info-label">เบอร์โทร</div><div class="info-value">${reservation.customer_phone || "-"}</div></div>
+                    <div class="info-row"><div class="info-label">ช่วงวันจอง</div><div class="info-value">${formatDateOnly(reservation.check_in_date)} → ${formatDateOnly(reservation.check_out_date)}</div></div>
+                    <div class="info-row"><div class="info-label">ยกเลิกเมื่อ</div><div class="info-value">${formatDateTime(reservation.archived_at)}</div></div>
+                    <div class="info-row"><div class="info-label">Payment Type</div><div class="info-value">${paymentTypeLabel(reservation.payment_type)}</div></div>
+                  </div>
+                  <div class="info-box">
+                    <h3>สรุปการเงิน</h3>
+                    <div class="info-row"><div class="info-label">ราคารวม</div><div class="info-value money">${formatMoney(reservation.total_price)} บาท</div></div>
+                    <div class="info-row"><div class="info-label">มัดจำรวม</div><div class="info-value money">${formatMoney(reservation.total_deposit)} บาท</div></div>
+                  </div>
+                  <div class="info-box">
+                    <h3>ห้องที่จองไว้</h3>
+                    <div style="font-size:13px; white-space:pre-line; color:#4e311a; line-height:1.6;">${reservation.room_summary || "-"}</div>
+                  </div>
+                  ${reservation.note ? `
+                  <div class="info-box">
+                    <h3>หมายเหตุ</h3>
+                    <div style="font-size:13px; color:#4e311a;">${reservation.note}</div>
+                  </div>` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // ── Live reservation (checked_in / checked_out / mixed) ───────────────
+        const groupPaymentDetail = getGroupPaymentDetail(group.rows);
+        const roomRowsHtml = group.rows.map(row => {
+          const parsedNote = splitCheckinNote(row.note);
+          const rowBg = row.is_active ? "background:#fff8ee;" : "";
+          const statusHtml = row.is_active
+            ? '<span class="tag tag-active" style="font-size:11px; padding:3px 8px;">กำลังพัก</span>'
+            : '<span class="tag tag-done" style="font-size:11px; padding:3px 8px;">เช็คเอาท์แล้ว</span>';
+          const extraHtml = (!row.is_active && Number(row.checkout_extra) > 0)
+            ? `<span style="color:#b55a00; font-weight:800;">+${formatMoney(row.checkout_extra)}</span>`
+            : (!row.is_active ? '<span class="muted">-</span>' : "");
+          const refundHtml = (!row.is_active && Number(row.checkout_refund) > 0)
+            ? `<span style="color:#2e6b3f; font-weight:800;">${formatMoney(row.checkout_refund)}</span>`
+            : (!row.is_active ? '<span class="muted">-</span>' : "");
+          const payTypeHtml = (!row.is_active && row.checkout_payment_type)
+            ? paymentTypeLabel(row.checkout_payment_type)
+            : (!row.is_active ? '<span class="muted">-</span>' : "");
+          const noteHtml = parsedNote.plainNote
+            ? `<span style="font-size:12px;">${parsedNote.plainNote}</span>`
+            : '<span class="muted">-</span>';
+          return `
+            <tr style="${rowBg}">
+              <td style="font-weight:800;">${row.room_number || "-"}</td>
+              <td>${row.room_type || "-"}</td>
+              <td>${row.guest_name || reservation.customer_name || "-"}</td>
+              <td>${statusHtml}</td>
+              <td class="text-right">${formatMoney(row.actual_price_per_night)} บาท</td>
+              <td class="text-right">${formatMoney(row.actual_total_price)} บาท</td>
+              <td class="text-right">${extraHtml}</td>
+              <td class="text-right">${refundHtml}</td>
+              <td>${payTypeHtml}</td>
+              <td>${formatDateTime(row.check_in_at)}</td>
+              <td>${row.check_out_at ? formatDateTime(row.check_out_at) : '<span class="muted">ยังไม่เช็คเอาท์</span>'}</td>
+              <td>${noteHtml}</td>
+            </tr>
+          `;
+        }).join("");
+
+        return `
+          <div class="reservation-group">
+            <div class="reservation-header">
+              <div>
+                <div class="reservation-title">Reservation ${reservation.reservation_code || group.reservationId}</div>
+                <div class="reservation-sub">
+                  ลูกค้า: ${reservation.customer_name || "-"} |
+                  โทร: ${reservation.customer_phone || "-"} |
+                  ${formatDateOnly(reservation.check_in_date)} → ${formatDateOnly(reservation.check_out_date)}
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <div class="reservation-count">${group.rows.length} ห้อง</div>
+                ${group.rows.filter(r => r.is_active).length > 0
+                  ? `<span class="tag tag-active" style="font-size:11px; padding:4px 10px;">${group.rows.filter(r => r.is_active).length} ยังพักอยู่</span>`
+                  : ''}
+                ${group.rows.filter(r => !r.is_active).length > 0
+                  ? `<span class="tag tag-done" style="font-size:11px; padding:4px 10px;">${group.rows.filter(r => !r.is_active).length} เช็คเอาท์แล้ว</span>`
+                  : ''}
+              </div>
+            </div>
+
+            <div class="reservation-body">
+              <div class="section-grid">
+                <div class="info-box">
+                  <h3>ข้อมูลการจอง</h3>
+                  <div class="info-row">
+                    <div class="info-label">Reservation ID</div>
+                    <div class="info-value">${group.reservationId || "-"}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">รหัสจอง</div>
+                    <div class="info-value">${reservation.reservation_code || "-"}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">ชื่อลูกค้า</div>
+                    <div class="info-value">${reservation.customer_name || "-"}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">เบอร์โทร</div>
+                    <div class="info-value">${reservation.customer_phone || "-"}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">ช่วงวันจอง</div>
+                    <div class="info-value">${formatDateOnly(reservation.check_in_date)} → ${formatDateOnly(reservation.check_out_date)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">สถานะรวม</div>
+                    <div class="info-value">${getDailyStatusTag(group.hasActiveRooms)}</div>
+                  </div>
+                </div>
+
+                <div class="info-box">
+                  <h3>สรุปการเงิน</h3>
+                  <div class="info-row">
+                    <div class="info-label">ราคารวมจริงทุกห้อง</div>
+                    <div class="info-value money">${formatMoney(group.totalActualPrice)} บาท</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">เงินมัดจำรวม</div>
+                    <div class="info-value money">${formatMoney(reservation.total_deposit)} บาท</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">ค่าใช้จ่ายเพิ่มตอน Check-out</div>
+                    <div class="info-value money">${formatMoney(reservation.checkout_extra)} บาท</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Payment Type</div>
+                    <div class="info-value">${paymentTypeLabel(reservation.payment_type)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Payment Detail</div>
+                    <div class="info-value">${groupPaymentDetail}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Extra Payment Type</div>
+                    <div class="info-value">${paymentTypeLabel(reservation.extra_payment_type)}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Extra Payment Detail</div>
+                    <div class="info-value">${reservation.extra_payment_detail || "-"}</div>
+                  </div>
+                </div>
+
+                <div class="info-box">
+                  <h3>หมายเหตุ</h3>
+                  <div class="info-row">
+                    <div class="info-label">หมายเหตุการจอง</div>
+                    <div class="info-value">${reservation.note || "-"}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">หมายเหตุ Check-out</div>
+                    <div class="info-value">${reservation.checkout_note || "-"}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-box">
+                <h3>รายละเอียดห้องจริงใน Reservation นี้</h3>
+                <table class="room-table">
+                  <thead>
+                    <tr>
+                      <th>ห้อง</th>
+                      <th>ประเภทห้อง</th>
+                      <th>ผู้เข้าพัก</th>
+                      <th>สถานะ</th>
+                      <th class="text-right">ราคา/คืน</th>
+                      <th class="text-right">ราคารวม</th>
+                      <th class="text-right">ค่าใช้จ่ายเพิ่ม</th>
+                      <th class="text-right">คืนเงิน</th>
+                      <th>วิธีชำระเพิ่ม</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>หมายเหตุ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${roomRowsHtml}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Leave dates blank on load = fetch all records (no date restriction)
+      // Staff can fill in dates to narrow down if needed
+
+      loadHistory();
+
+      document.getElementById("searchBtn").addEventListener("click", loadHistory);
+      document.getElementById("searchBox").addEventListener("keydown", e => {
+        if (e.key === "Enter") loadHistory();
+      });
+      document.getElementById("statusFilter").addEventListener("change", loadHistory);
+
+      document.getElementById("loadMoreBtn").addEventListener("click", () => {
+        fetchPage(currentOffset, true);
+      });
+
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        document.getElementById("searchBox").value = "";
+        document.getElementById("statusFilter").value = "";
+        document.getElementById("dateFrom").value = "";
+        document.getElementById("dateTo").value = "";
+        loadHistory();
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+

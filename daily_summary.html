@@ -1,0 +1,1032 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>สรุปภาพรวมห้องรายวัน</title>
+  <script src="date-format.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #f6efe7;
+      --card: #ffffff;
+      --border: #e4d6c4;
+      --text: #5b3720;
+      --muted: #8a6a52;
+      --primary: #8b5e34;
+      --primary-dark: #6f4827;
+      --navy: #243b6b;
+      --green: #1f7a45;
+      --green-soft: #edf9f0;
+      --orange: #b56a15;
+      --orange-soft: #fff5e6;
+      --red: #b33030;
+      --red-soft: #fff0f0;
+      --blue-soft: #edf4ff;
+      --shadow: 0 4px 14px rgba(0,0,0,0.08);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #f8f2eb 0%, #f4eee7 100%);
+      color: var(--text);
+    }
+
+    header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 22px 24px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .header-title h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .back-btn,
+    .print-btn,
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .back-btn {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .print-btn {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .print-btn:hover {
+      opacity: 0.92;
+    }
+
+    .action-btn {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .action-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 6px 24px 42px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: var(--primary-dark);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .print-meta {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .stat-box {
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      min-height: 100px;
+    }
+
+    .stat-box.primary {
+      background: linear-gradient(135deg, #fff7ef 0%, #fff 100%);
+    }
+
+    .stat-box.success {
+      background: linear-gradient(135deg, #effbf2 0%, #fff 100%);
+      border-color: #d4ecd9;
+    }
+
+    .stat-box.navy {
+      background: linear-gradient(135deg, #eef4ff 0%, #fff 100%);
+      border-color: #dbe7ff;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--navy);
+    }
+
+    .stat-sub {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pay-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .pay-card {
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .pay-card.cash { background: #fff7ea; }
+    .pay-card.transfer { background: #edf4ff; }
+    .pay-card.card { background: #f5eeff; }
+    .pay-card.paid { background: #eef9f1; }
+    .pay-card.unpaid { background: #fff1f1; }
+    .pay-card.unknown { background: #f6f6f6; }
+
+    .pay-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .pay-value {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    .pay-sub {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #777;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 10px;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .input-group label {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 9px 10px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #d8c7b3;
+      background: #fff;
+      min-width: 120px;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #b47d43;
+      box-shadow: 0 0 0 3px rgba(180,125,67,0.12);
+    }
+
+    .table-wrap {
+      margin-top: 12px;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+      min-width: 980px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #eee2d4;
+      padding: 10px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f3e6d8;
+      color: #6b4729;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fffdfa;
+    }
+
+    tbody tr:hover {
+      background: #fff7f0;
+    }
+
+    .row-total {
+      background: #f5efe8 !important;
+      font-weight: 800;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .money-received {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .money-zero {
+      color: #999;
+    }
+
+    .section-note {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .payment-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid rgba(0,0,0,.07);
+      white-space: nowrap;
+    }
+
+    .pay-cash-badge { background: #fff1d6; color: #8a5a00; }
+    .pay-transfer-badge { background: #e7f0ff; color: #1f4e9e; }
+    .pay-card-badge { background: #f0e7ff; color: #6a32a1; }
+    .pay-paid-badge { background: #e6f7ea; color: #2f7d32; }
+    .pay-unpaid-badge { background: #ffe7e7; color: #b02a37; }
+    .pay-other-badge { background: #f2f2f2; color: #555; }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .legend-item {
+      font-size: 12px;
+      color: var(--muted);
+      background: #faf7f2;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+
+    @media (max-width: 768px) {
+      .stat-value { font-size: 24px; }
+      .pay-value { font-size: 20px; }
+      .header-title h1 { font-size: 24px; }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .back-btn,
+      .print-btn,
+      .action-btn,
+      .filter-row {
+        display: none !important;
+      }
+
+      header {
+        max-width: 100%;
+        margin: 0;
+        padding: 0 0 12px;
+      }
+
+      .header-title h1 {
+        color: #000;
+        font-size: 20px;
+      }
+
+      .header-sub {
+        color: #000;
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin-bottom: 18px;
+      }
+
+      .print-meta {
+        display: block;
+      }
+
+      .stat-box,
+      .pay-card {
+        background: #fff !important;
+        border: 1px solid #999 !important;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        border: 1px solid #999;
+        color: #000;
+        padding: 6px;
+      }
+
+      th {
+        background: #eee !important;
+      }
+
+      .payment-badge {
+        background: #fff !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+      }
+
+      tr, td, th {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="back-btn" onclick="history.back()">← กลับ</button>
+    <button class="print-btn" onclick="printDailySummary()">🖨️ พิมพ์</button>
+
+    <div class="header-title">
+      <h1>สรุปภาพรวมห้องรายวัน</h1>
+      <div class="header-sub">หน้าสำหรับตรวจสอบยอดจาก reservations</div>
+    </div>
+  </header>
+
+  <div class="page">
+    <div class="card">
+      <h2>สรุปตัวเลขสำคัญ</h2>
+      <div class="print-meta" id="printMeta"></div>
+
+      <div class="stats-grid">
+        <div class="stat-box primary">
+          <div class="stat-label">จำนวนรายการจองทั้งหมด</div>
+          <div class="stat-value" id="totalReservations">0</div>
+          <div class="stat-sub">รวมทุกสถานะ</div>
+        </div>
+
+        <div class="stat-box navy">
+          <div class="stat-label">จำนวนรายการที่เข้าพักอยู่</div>
+          <div class="stat-value" id="checkedInReservations">0</div>
+          <div class="stat-sub">เฉพาะ checked_in</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-label">จำนวนรายการที่ Check-out แล้ว</div>
+          <div class="stat-value" id="checkedOutReservations">0</div>
+          <div class="stat-sub">เฉพาะ checked_out</div>
+        </div>
+
+        <div class="stat-box success">
+          <div class="stat-label">ยอดรับเงินจริงทั้งหมด</div>
+          <div class="stat-value" id="totalReceivedIncome">0.00</div>
+          <div class="stat-sub">นับเฉพาะ เงินสด / โอน / บัตร จาก reservations และ checkout extra</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-label">ยอดรวมตามทุกสถานะ</div>
+          <div class="stat-value" id="totalIncomeAll">0.00</div>
+          <div class="stat-sub">รวม paid / unpaid / ไม่ระบุ ด้วย</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">ยอดจองหลักใช้จาก reservations.total_price</div>
+        <div class="legend-item">ค่าใช้จ่ายตอนออกใช้จาก reservations.checkout_extra</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>สรุปยอดตาม Payment Type</h2>
+      <div id="paymentTypeSummary" class="pay-grid"></div>
+      <div class="section-note">
+        ส่วนนี้รวมทั้งยอดจาก reservations และ checkout_extra
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>รายได้รายวันตามเดือนที่เลือก</h2>
+
+      <div class="filter-row">
+        <div class="input-group">
+          <label for="monthInput">เดือน</label>
+          <select id="monthInput">
+            <option value="1">มกราคม</option>
+            <option value="2">กุมภาพันธ์</option>
+            <option value="3">มีนาคม</option>
+            <option value="4">เมษายน</option>
+            <option value="5">พฤษภาคม</option>
+            <option value="6">มิถุนายน</option>
+            <option value="7">กรกฎาคม</option>
+            <option value="8">สิงหาคม</option>
+            <option value="9">กันยายน</option>
+            <option value="10">ตุลาคม</option>
+            <option value="11">พฤศจิกายน</option>
+            <option value="12">ธันวาคม</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="yearInput">ปี</label>
+          <input type="number" id="yearInput" style="width:110px;">
+        </div>
+
+        <button class="action-btn" onclick="renderDailyIncome()">แสดงรายได้รายวัน</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="dailyIncomeTable">
+          <thead>
+            <tr>
+              <th>วันที่</th>
+              <th class="text-right">เงินสด</th>
+              <th class="text-right">โอนเงิน</th>
+              <th class="text-right">บัตร</th>
+              <th class="text-right">ยอดรับจริง</th>
+              <th class="text-right">ชำระแล้ว</th>
+              <th class="text-right">ยังไม่ชำระ</th>
+              <th class="text-right">ไม่ระบุ</th>
+              <th class="text-right">ยอดรวมทั้งหมด</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-note">
+        หมายเหตุ: รายวันใช้วันที่จาก reservation และ checkout_extra เท่านั้น
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>รายการที่กำลังเข้าพัก</h2>
+
+      <div class="table-wrap">
+        <table id="checkedInTable">
+          <thead>
+            <tr>
+              <th>รหัสจอง</th>
+              <th>ชื่อลูกค้า</th>
+              <th>เบอร์โทร</th>
+              <th>วันเข้า</th>
+              <th>วันออก</th>
+              <th class="text-center">จำนวนคืน</th>
+              <th class="text-center">จำนวนห้อง</th>
+              <th class="text-right">ราคาต่อคืน</th>
+              <th class="text-right">ยอดจอง</th>
+              <th class="text-right">ยอดที่รับแล้ว</th>
+              <th>Payment Type</th>
+              <th>สถานะ</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-note">
+        ยอดที่รับแล้วของรายการที่กำลังเข้าพัก จะอิงจาก reservations.total_price ตาม payment_type ของ reservation
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    let reservationsCache = null;
+
+    function formatMoney(num) {
+      const n = Number(num) || 0;
+      return n.toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatMoneyHtml(num, isReceived = false) {
+      const val = formatMoney(num);
+      if ((Number(num) || 0) <= 0) return `<span class="money-zero">${val}</span>`;
+      if (isReceived) return `<span class="money-received">${val}</span>`;
+      return val;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return formatDisplayDate(dateStr, "");
+    }
+
+    function toNumber(val) {
+      const n = Number(val || 0);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function calcNights(checkIn, checkOut) {
+      if (!checkIn || !checkOut) return 1;
+
+      const inDate = new Date(checkIn);
+      const outDate = new Date(checkOut);
+
+      if (isNaN(inDate.getTime()) || isNaN(outDate.getTime())) return 1;
+
+      const diffMs = outDate - inDate;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 1;
+    }
+
+    function normalizeDateOnly(dateStr) {
+      if (!dateStr) return "";
+      return String(dateStr).split("T")[0];
+    }
+
+    function normalizeText(v) {
+      return String(v || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "");
+    }
+
+    function getPaymentKey(v) {
+      const x = normalizeText(v);
+
+      if (x === "cash" || x === "เงินสด" || x === "สด") return "cash";
+
+      if (
+        x === "transfer" ||
+        x === "banktransfer" ||
+        x === "โอน" ||
+        x === "โอนเงิน" ||
+        x === "โอนธนาคาร" ||
+        x === "พร้อมเพย์" ||
+        x === "promptpay"
+      ) return "transfer";
+
+      if (
+        x === "card" ||
+        x === "creditcard" ||
+        x === "debitcard" ||
+        x === "บัตร" ||
+        x === "บัตรเครดิต" ||
+        x === "บัตรเดบิต" ||
+        x === "บัตรเครดิต/เดบิต"
+      ) return "card";
+
+      if (
+        x === "paid" ||
+        x === "ชำระแล้ว" ||
+        x === "จ่ายแล้ว" ||
+        x === "paidinfull"
+      ) return "paid";
+
+      if (
+        x === "unpaid" ||
+        x === "pendingpayment" ||
+        x === "ยังไม่ชำระ" ||
+        x === "ค้างชำระ" ||
+        x === "ยังไม่จ่าย"
+      ) return "unpaid";
+
+      return "unknown";
+    }
+
+    function paymentTypeText(v) {
+      const key = getPaymentKey(v);
+      if (key === "cash") return "เงินสด";
+      if (key === "transfer") return "โอนเงิน";
+      if (key === "card") return "บัตร";
+      if (key === "paid") return "ชำระแล้ว";
+      if (key === "unpaid") return "ยังไม่ชำระ";
+      return "ไม่ระบุ";
+    }
+
+    function paymentTypeClass(v) {
+      const key = getPaymentKey(v);
+      if (key === "cash") return "pay-cash-badge";
+      if (key === "transfer") return "pay-transfer-badge";
+      if (key === "card") return "pay-card-badge";
+      if (key === "paid") return "pay-paid-badge";
+      if (key === "unpaid") return "pay-unpaid-badge";
+      return "pay-other-badge";
+    }
+
+    function paymentBadge(v) {
+      return `<span class="payment-badge ${paymentTypeClass(v)}">${paymentTypeText(v)}</span>`;
+    }
+
+    function getPaymentTypeKeys() {
+      return ["cash", "transfer", "card", "paid", "unpaid", "unknown"];
+    }
+
+    function emptyPaymentBucket() {
+      return {
+        cash: 0,
+        transfer: 0,
+        card: 0,
+        paid: 0,
+        unpaid: 0,
+        unknown: 0
+      };
+    }
+
+    function printDailySummary() {
+      const now = new Date();
+      document.getElementById("printMeta").textContent =
+        "พิมพ์เมื่อ: " + formatDisplayDateTime(now);
+      window.print();
+    }
+
+    function isReceivedKey(key) {
+      return key === "cash" || key === "transfer" || key === "card";
+    }
+
+    function isPaidLikeKey(key) {
+      return key === "cash" || key === "transfer" || key === "card" || key === "paid";
+    }
+
+    function getReservationPaidAmount(row) {
+      const key = getPaymentKey(row.payment_type);
+      if (!isPaidLikeKey(key)) return 0;
+      return toNumber(row.total_price);
+    }
+
+    function buildAllTransactions(reservations) {
+      const transactions = [];
+
+      reservations.forEach(r => {
+        const baseAmount = toNumber(r.total_price);
+        const extraAmount = toNumber(r.checkout_extra);
+        const paymentType = r.payment_type || "";
+        const baseDate = normalizeDateOnly(r.check_in_date || r.created_at);
+        const checkoutDate = normalizeDateOnly(r.check_out_date);
+
+        if (baseAmount > 0 && baseDate) {
+          transactions.push({
+            date: baseDate,
+            amount: baseAmount,
+            paymentType,
+            source: "reservation"
+          });
+        }
+
+        if (extraAmount > 0 && checkoutDate) {
+          transactions.push({
+            date: checkoutDate,
+            amount: extraAmount,
+            paymentType,
+            source: "checkout_extra"
+          });
+        }
+      });
+
+      return transactions;
+    }
+
+    function renderPaymentTypeSummary(transactions) {
+      const container = document.getElementById("paymentTypeSummary");
+      const bucket = emptyPaymentBucket();
+      const countBucket = emptyPaymentBucket();
+
+      transactions.forEach(t => {
+        const key = getPaymentKey(t.paymentType);
+        bucket[key] += toNumber(t.amount);
+        countBucket[key] += 1;
+      });
+
+      const items = [
+        { key: "cash", label: "เงินสด", cls: "cash" },
+        { key: "transfer", label: "โอนเงิน", cls: "transfer" },
+        { key: "card", label: "บัตร", cls: "card" },
+        { key: "paid", label: "ชำระแล้ว", cls: "paid" },
+        { key: "unpaid", label: "ยังไม่ชำระ", cls: "unpaid" },
+        { key: "unknown", label: "ไม่ระบุ", cls: "unknown" }
+      ];
+
+      container.innerHTML = items.map(item => `
+        <div class="pay-card ${item.cls}">
+          <div class="pay-label">${item.label}</div>
+          <div class="pay-value">${formatMoney(bucket[item.key])}</div>
+          <div class="pay-sub">${countBucket[item.key]} รายการ</div>
+        </div>
+      `).join("");
+    }
+
+    async function getAllReservations() {
+      if (reservationsCache) return reservationsCache;
+
+      const { data, error } = await db
+        .from("reservations")
+        .select(`
+          id,
+          reservation_code,
+          customer_name,
+          customer_phone,
+          check_in_date,
+          check_out_date,
+          status,
+          created_at,
+          updated_at,
+          price_per_night,
+          total_rooms,
+          total_price,
+          checkout_extra,
+          payment_type
+        `)
+        .order("check_in_date", { ascending: false });
+
+      if (error) {
+        console.error("reservations fetch error:", error);
+        reservationsCache = [];
+        return reservationsCache;
+      }
+
+      reservationsCache = data || [];
+      return reservationsCache;
+    }
+
+    async function initSummary() {
+      const reservations = await getAllReservations();
+
+      const checkedInRows = reservations.filter(r =>
+        String(r.status || "").trim().toLowerCase() === "checked_in"
+      );
+
+      const checkedOutRows = reservations.filter(r =>
+        String(r.status || "").trim().toLowerCase() === "checked_out"
+      );
+
+      document.getElementById("totalReservations").textContent = reservations.length;
+      document.getElementById("checkedInReservations").textContent = checkedInRows.length;
+      document.getElementById("checkedOutReservations").textContent = checkedOutRows.length;
+
+      const transactions = buildAllTransactions(reservations);
+
+      let totalReceivedIncome = 0;
+      let totalIncomeAll = 0;
+
+      transactions.forEach(t => {
+        const key = getPaymentKey(t.paymentType);
+        totalIncomeAll += toNumber(t.amount);
+        if (isReceivedKey(key)) {
+          totalReceivedIncome += toNumber(t.amount);
+        }
+      });
+
+      document.getElementById("totalReceivedIncome").textContent = formatMoney(totalReceivedIncome) + " บาท";
+      document.getElementById("totalIncomeAll").textContent = formatMoney(totalIncomeAll) + " บาท";
+
+      renderPaymentTypeSummary(transactions);
+
+      const tbody = document.querySelector("#checkedInTable tbody");
+      tbody.innerHTML = "";
+
+      checkedInRows.forEach(r => {
+        const paidAmount = getReservationPaidAmount(r);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.reservation_code || ""}</td>
+          <td>${r.customer_name || ""}</td>
+          <td>${r.customer_phone || ""}</td>
+          <td>${formatDate(r.check_in_date)}</td>
+          <td>${formatDate(r.check_out_date)}</td>
+          <td class="text-center">${calcNights(r.check_in_date, r.check_out_date)}</td>
+          <td class="text-center">${r.total_rooms || 0}</td>
+          <td class="text-right">${formatMoney(r.price_per_night)}</td>
+          <td class="text-right">${formatMoney(r.total_price)}</td>
+          <td class="text-right">${formatMoneyHtml(paidAmount, true)}</td>
+          <td>${paymentBadge(r.payment_type)}</td>
+          <td>${r.status || ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (!tbody.hasChildNodes()) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="12" class="text-center">ไม่มีรายการที่กำลังเข้าพัก</td>`;
+        tbody.appendChild(tr);
+      }
+
+      const today = new Date();
+      document.getElementById("monthInput").value = String(today.getMonth() + 1);
+      document.getElementById("yearInput").value = today.getFullYear();
+
+      await renderDailyIncome();
+    }
+
+    async function renderDailyIncome() {
+      const tbody = document.querySelector("#dailyIncomeTable tbody");
+      tbody.innerHTML = "";
+
+      const month = parseInt(document.getElementById("monthInput").value, 10);
+      const year = parseInt(document.getElementById("yearInput").value, 10);
+
+      if (isNaN(month) || isNaN(year)) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="9" class="text-center">กรุณาเลือกเดือนและปีให้ถูกต้อง</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      const reservations = await getAllReservations();
+      const transactions = buildAllTransactions(reservations);
+
+      const dailySum = {};
+
+      transactions.forEach(t => {
+        const key = getPaymentKey(t.paymentType);
+
+        if (!t.date) return;
+
+        const d = new Date(t.date + "T00:00:00");
+        if (isNaN(d.getTime())) return;
+        if (d.getMonth() + 1 !== month || d.getFullYear() !== year) return;
+
+        if (!dailySum[t.date]) {
+          dailySum[t.date] = {
+            totalAll: 0,
+            totalReceived: 0,
+            bucket: emptyPaymentBucket()
+          };
+        }
+
+        dailySum[t.date].bucket[key] += toNumber(t.amount);
+        dailySum[t.date].totalAll += toNumber(t.amount);
+
+        if (isReceivedKey(key)) {
+          dailySum[t.date].totalReceived += toNumber(t.amount);
+        }
+      });
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      let totalMonthAll = 0;
+      let totalMonthReceived = 0;
+      const totalMonthBucket = emptyPaymentBucket();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const data = dailySum[dateKey] || {
+          totalAll: 0,
+          totalReceived: 0,
+          bucket: emptyPaymentBucket()
+        };
+
+        totalMonthAll += data.totalAll;
+        totalMonthReceived += data.totalReceived;
+
+        getPaymentTypeKeys().forEach(k => {
+          totalMonthBucket[k] += data.bucket[k];
+        });
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDate(dateKey)}</td>
+          <td class="text-right">${formatMoneyHtml(data.bucket.cash, true)}</td>
+          <td class="text-right">${formatMoneyHtml(data.bucket.transfer, true)}</td>
+          <td class="text-right">${formatMoneyHtml(data.bucket.card, true)}</td>
+          <td class="text-right">${formatMoneyHtml(data.totalReceived, true)}</td>
+          <td class="text-right">${formatMoney(data.bucket.paid)}</td>
+          <td class="text-right">${formatMoney(data.bucket.unpaid)}</td>
+          <td class="text-right">${formatMoney(data.bucket.unknown)}</td>
+          <td class="text-right">${formatMoney(data.totalAll)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      const trTotal = document.createElement("tr");
+      trTotal.className = "row-total";
+      trTotal.innerHTML = `
+        <th>รวมทั้งเดือน</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.cash)}</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.transfer)}</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.card)}</th>
+        <th class="text-right">${formatMoney(totalMonthReceived)}</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.paid)}</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.unpaid)}</th>
+        <th class="text-right">${formatMoney(totalMonthBucket.unknown)}</th>
+        <th class="text-right">${formatMoney(totalMonthAll)}</th>
+      `;
+      tbody.appendChild(trTotal);
+    }
+
+    document.addEventListener("DOMContentLoaded", initSummary);
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,2074 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>จัดการผู้เช่ารายเดือน</title>
+  <script src="date-format.js"></script>
+  <style>
+    body {
+      font-family: "Prompt", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4eee7;
+      color: #6b3b1c;
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 24px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #7b4a23;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 8px 24px 40px;
+      box-sizing: border-box;
+    }
+
+    .back-btn,
+    .print-btn,
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #a66a2b;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    }
+
+    .back-btn:hover,
+    .print-btn:hover,
+    button:hover {
+      background: #905825;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.22);
+    }
+
+    .print-btn {
+      background: #2b3a67;
+    }
+
+    .print-btn:hover {
+      background: #1f2c50;
+    }
+
+    .secondary-btn {
+      margin-top: 0;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #f0e2d2;
+      color: #6b3b1c;
+      box-shadow: none;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .secondary-btn:hover {
+      background: #e2d0bc;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .btn-danger {
+      background: #c62828;
+    }
+
+    .btn-danger:hover {
+      background: #aa1f1f;
+    }
+
+    .btn-ended {
+      background: #2f7d32;
+    }
+
+    .btn-ended:hover {
+      background: #246127;
+    }
+
+    .card,
+    .combined-card {
+      background: #ffffff;
+      padding: 18px 18px 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e0d2c0;
+      margin-bottom: 18px;
+    }
+
+    .card h2,
+    .combined-card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #7b4a23;
+    }
+
+    .card p,
+    .combined-card p {
+      font-size: 13px;
+      margin: 4px 0 10px;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid #e7d9c8;
+      margin: 20px 0 18px;
+    }
+
+    .section-title {
+      margin-bottom: 10px;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .role-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: #f0e2d2;
+      color: #6b3b1c;
+      font-weight: 700;
+    }
+
+    .summary-bar {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff2cc;
+      color: #7b4a23;
+      border: 1px solid #ead7a2;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .summary-bar.show {
+      display: block;
+    }
+
+    .admin-note {
+      color: #c62828;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 6px 8px;
+      margin-top: 4px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: 1px solid #d6c4ad;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 16px;
+      margin-top: 10px;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .room-picker-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .room-picker-row input[readonly] {
+      background: #f7f0e6;
+      cursor: default;
+    }
+
+    .form-actions {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #e4d6c4;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0e2d2;
+      font-weight: 600;
+    }
+
+    tr.ended-row td {
+      background: #fff7f7;
+    }
+
+    tr.overdue-row td {
+      background: #fffbea;
+    }
+
+    .status-active {
+      color: #2f7d32;
+      font-weight: 700;
+    }
+
+    .status-ended {
+      color: #c62828;
+      font-weight: 700;
+    }
+
+    .status-paid {
+      color: #1e8449;
+      font-weight: 700;
+    }
+
+    .status-partial {
+      color: #e67e22;
+      font-weight: 700;
+    }
+
+    .status-unpaid {
+      color: #c0392b;
+      font-weight: 700;
+    }
+
+    .month-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .month-item-pending {
+      background: #eafaf1;
+      border: 1.5px solid #27ae60;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .month-item-pending .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .status-pending {
+      background: #27ae60;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .month-item {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      background: #faf7f2;
+      font-size: 12px;
+    }
+
+    .month-item.debt {
+      border-color: #e74c3c;
+      background: #ffecec;
+    }
+
+    .month-item.ok {
+      border-color: #dcdcdc;
+      background: #faf7f2;
+    }
+
+    .month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .month-label {
+      font-weight: 700;
+      color: #2b3a67;
+    }
+
+    .month-detail {
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .overdue-tag {
+      font-size: 11px;
+      color: #c0392b;
+      border: 1px solid #c0392b;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 6px;
+      background: #fff;
+    }
+
+    .current-month-tag {
+      font-size: 11px;
+      color: #2b3a67;
+      border: 1px solid #2b3a67;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 6px;
+      background: #fff;
+    }
+
+    .room-total-debt {
+      font-size: 13px;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .debt-text {
+      color: #c0392b;
+      font-weight: 700;
+    }
+
+    .no-debt-text {
+      color: #1e8449;
+      font-weight: 700;
+    }
+
+    .bill-text {
+      color: #2b3a67;
+      font-weight: 600;
+    }
+
+    .paid-text {
+      color: #1e8449;
+      font-weight: 600;
+    }
+
+    .extra-text {
+      color: #6b3b1c;
+      font-weight: 600;
+    }
+
+    .print-meta {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    #combinedTable button {
+      margin-top: 0;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    .cancel-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+      z-index: 2000;
+      overflow-y: auto;
+    }
+    .cancel-modal-backdrop.show { display: flex; }
+    .cancel-modal {
+      background: #fff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      border: 1px solid #e0d2c0;
+      margin: auto;
+    }
+    .cancel-modal-header {
+      background: #c0392b;
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 14px 14px 0 0;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cancel-modal-close {
+      border: none;
+      background: transparent;
+      color: #ffd7d2;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cancel-modal-close:hover {
+      color: #ffffff;
+    }
+    .cancel-modal-close:focus-visible {
+      outline: 2px solid #fff1a8;
+      outline-offset: 2px;
+      border-radius: 999px;
+    }
+    .cancel-modal-title {
+      flex: 1;
+    }
+    .cancel-modal-body { padding: 16px 18px; }
+    .cancel-section {
+      background: #fff7ed;
+      border: 1px solid #ead5b7;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    .cancel-section-title {
+      font-weight: 700;
+      color: #7b4a23;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .cancel-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px dashed #e1c89c;
+    }
+    .cancel-row:last-child { border-bottom: none; }
+    .cancel-total {
+      font-weight: 800;
+      color: #c0392b;
+      font-size: 15px;
+    }
+    .cancel-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .cancel-form-grid .full { grid-column: 1 / -1; }
+    .cancel-form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: #6b3b1c;
+    }
+    .cancel-form-input {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid #d6c4ad;
+      font-size: 13px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .cancel-disabled-btn {
+      background: #bbb !important;
+      color: #888 !important;
+      cursor: not-allowed !important;
+      filter: grayscale(1);
+    }
+    .util-warning {
+      background: #fff3cd;
+      border: 1px solid #f0c040;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #7b5800;
+      margin-bottom: 10px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      padding: 18px 18px 16px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      border: 1px solid #e0d2c0;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 17px;
+      color: #7b4a23;
+    }
+
+    .modal-buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-buttons button {
+      margin-top: 0;
+    }
+
+    .modal-buttons button:first-child {
+      background: #e4d6c4;
+      color: #6b3b1c;
+      box-shadow: none;
+    }
+
+    .modal-buttons button:first-child:hover {
+      background: #d6c4af;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 16px 16px 4px;
+      }
+
+      .page {
+        padding: 8px 16px 28px;
+      }
+
+      .card,
+      .combined-card {
+        padding: 14px 14px 18px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 6px;
+      }
+
+      .room-picker-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .room-picker-row .secondary-btn {
+        align-self: flex-start;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .back-btn,
+      .print-btn,
+      button,
+      .modal-backdrop,
+      #roleBadge,
+      #tenantFormSection {
+        display: none !important;
+      }
+
+      header {
+        max-width: 100%;
+        margin: 0;
+        padding: 0 0 12px 0;
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .card,
+      .combined-card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+
+      .section-divider {
+        display: none;
+      }
+
+      .print-meta {
+        display: block;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        border: 1px solid #999;
+        color: #000;
+      }
+
+      th {
+        background: #eee !important;
+      }
+
+      .month-item-pending {
+      background: #eafaf1;
+      border: 1.5px solid #27ae60;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .month-item-pending .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .status-pending {
+      background: #27ae60;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .month-item {
+        border: 1px solid #bbb;
+        background: #fff !important;
+      }
+
+      .status-paid,
+      .status-partial,
+      .status-unpaid,
+      .debt-text,
+      .no-debt-text,
+      .bill-text,
+      .paid-text,
+      .extra-text,
+      .month-label,
+      .month-detail,
+      .status-active,
+      .status-ended {
+        color: #000 !important;
+      }
+
+      .overdue-tag,
+      .current-month-tag {
+        color: #000 !important;
+        border-color: #000 !important;
+        background: #fff !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-btn" onclick="location.href='monthly_home.html'">
+      <span class="arrow">&larr;</span>
+      กลับหน้าแรก
+    </button>
+    <button class="print-btn" onclick="printCombinedPage()">🖨️ พิมพ์</button>
+    <h1>
+      จัดการผู้เช่ารายเดือน
+      <span id="roleBadge" class="role-badge">กำลังตรวจสอบสิทธิ์...</span>
+    </h1>
+  </header>
+
+  <div class="page">
+
+    <div class="combined-card">
+
+      <div id="tenantFormSection">
+        <h2 class="section-title">เพิ่มข้อมูลผู้เช่า (สร้างสัญญาใหม่)</h2>
+        <p class="small">
+          ใช้สำหรับสร้างสัญญาเช่าใหม่ในห้องที่ยังไม่มีสัญญาในช่วงเวลาเดียวกัน
+        </p>
+
+        <div class="form-grid">
+          <div class="full">
+            <label>หมายเลขห้อง</label>
+            <div class="room-picker-row">
+              <input type="text" id="room" placeholder="เลือกห้องจากแผนผัง" readonly>
+              <button type="button" class="secondary-btn" onclick="openRoomPlan()">
+                เลือกจากแผนผัง
+              </button>
+            </div>
+            <p class="small">
+              ไปที่หน้าแผนผังห้อง แล้วแตะห้องที่ต้องการ ระบบจะส่งเลขห้องกลับมายังหน้านี้อัตโนมัติ
+            </p>
+          </div>
+
+          <div>
+            <label>ชื่อผู้เช่า</label>
+            <input type="text" id="tenantName" placeholder="เช่น คุณสมชาย">
+          </div>
+
+          <div>
+            <label>เบอร์ติดต่อ</label>
+            <input type="text" id="phone" placeholder="เช่น 08x-xxx-xxxx">
+          </div>
+
+          <div class="full">
+            <label>เลขบัตรประชาชน / เลขพาสปอร์ต</label>
+            <input type="text" id="idNumber" placeholder="เช่น 1-2345-67890-12-3 หรือเลขพาสปอร์ต">
+          </div>
+
+          <div>
+            <label>ค่าเช่ารายเดือน (บาท)</label>
+            <input type="number" id="monthlyRent" placeholder="เช่น 6500">
+          </div>
+
+          <div>
+            <label>เงินประกัน / มัดจำ (บาท)</label>
+            <input type="number" id="depositAmount" placeholder="เช่น 3000" min="0" step="1">
+          </div>
+
+          <div>
+            <label>ระยะเวลาเช่า (เดือน)</label>
+            <input type="number" id="leaseDuration" min="1" step="1" placeholder="เช่น 12">
+          </div>
+
+          <div>
+            <label>วันที่เริ่มเช่า</label>
+            <input type="date" id="startDate">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button onclick="saveTenant()">บันทึกข้อมูล</button>
+          <p id="message" style="color: green; margin: 0; font-size: 13px;"></p>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <div id="tableSection">
+        <h2 class="section-title">ตารางรวมข้อมูลผู้เช่าและสถานะการชำระ</h2>
+        <p class="small">
+          ตารางนี้รวมข้อมูลผู้เช่า สัญญาเช่า สถานะห้อง ประวัติการชำระ และยอดค้าง โดยระบบจะเอาเงินที่จ่ายมาตัดเดือนเก่าสุดก่อน
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
+          <input type="text" id="searchInput" placeholder="ค้นหาชื่อผู้เช่า / หมายเลขห้อง..." oninput="filterTable()" style="flex:1; min-width:200px; padding:8px 10px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+          <select id="statusFilter" onchange="filterTable()" style="padding:8px 10px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+            <option value="all">แสดงทั้งหมด</option>
+            <option value="active">กำลังเช่าอยู่</option>
+            <option value="ended">หมดสัญญาแล้ว</option>
+            <option value="overdue">ค้างชำระ</option>
+          </select>
+        </div>
+
+        <div id="endedSummary" class="summary-bar"></div>
+        <div class="print-meta" id="printMeta"></div>
+
+        <table id="combinedTable">
+          <thead>
+            <tr>
+              <th>Rental ID</th>
+              <th>ห้อง</th>
+              <th>ผู้เช่า / ติดต่อ</th>
+              <th>เลขบัตร / พาสปอร์ต</th>
+              <th>สัญญา</th>
+              <th>ค่าเช่า / มัดจำ</th>
+              <th>สถานะการชำระ</th>
+              <th>อัปเดตล่าสุด</th>
+              <th>การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cancel Contract Modal -->
+  <div id="cancelModalBackdrop" class="cancel-modal-backdrop">
+    <div class="cancel-modal">
+      <div class="cancel-modal-header">
+        <button type="button" class="cancel-modal-close" onclick="closeCancelModal()" aria-label="ปิดหน้าต่างยกเลิกสัญญา">×</button>
+        <div class="cancel-modal-title">ยกเลิกสัญญาห้อง <span id="cancelRoomNo"></span></div>
+      </div>
+      <div class="cancel-modal-body">
+
+        <div id="cancelUtilWarning" class="util-warning" style="display:none;">
+          ⚠ ยังไม่มีการอ่านมิเตอร์วันนี้ — กรุณาบันทึกมิเตอร์น้ำ/ไฟในหน้า <strong>บันทึกมิเตอร์</strong> ก่อน แล้วกลับมายกเลิกสัญญาอีกครั้ง
+        </div>
+
+        <div class="cancel-section">
+          <div class="cancel-section-title">💡 ค่าน้ำ/ไฟงวดสุดท้าย (จากการอ่านมิเตอร์ล่าสุด)</div>
+          <div id="cancelUtilSummary">กำลังโหลด...</div>
+        </div>
+
+        <div class="cancel-section">
+          <div class="cancel-section-title">💳 การชำระเงิน</div>
+          <div class="cancel-form-grid">
+            <div>
+              <label class="cancel-form-label">ค่าใช้จ่ายเพิ่มเติม (บาท)</label>
+              <input type="number" id="cancelExtraCost" class="cancel-form-input" placeholder="0" min="0" step="0.01" oninput="updateCancelSummary()">
+            </div>
+            <div>
+              <label class="cancel-form-label">รายละเอียดค่าใช้จ่ายเพิ่มเติม</label>
+              <input type="text" id="cancelExtraDetail" class="cancel-form-input" placeholder="เช่น ค่าทำความสะอาด">
+            </div>
+            <div>
+              <label class="cancel-form-label">การคืนเงิน (บาท)</label>
+              <input type="number" id="cancelRefund" class="cancel-form-input" placeholder="0" min="0" step="0.01" oninput="updateCancelSummary()">
+            </div>
+            <div>
+              <label class="cancel-form-label">รายละเอียดการคืนเงิน</label>
+              <input type="text" id="cancelPayDetail" class="cancel-form-input" placeholder="เลขที่โอน / อ้างอิง">
+            </div>
+            <div>
+              <label class="cancel-form-label">ประเภทการชำระเงิน *</label>
+              <select id="cancelExtraPayMethod" class="cancel-form-input">
+                <option value="">-- เลือก --</option>
+                <option value="cash">เงินสด</option>
+                <option value="transfer">โอนเงิน</option>
+                <option value="card">บัตร</option>
+              </select>
+            </div>
+            <div>
+              <label class="cancel-form-label">รายละเอียดการชำระเงิน</label>
+              <input type="text" id="cancelPayMethod" class="cancel-form-input" placeholder="เลขที่โอน / อ้างอิง">
+            </div>
+            <div class="full">
+              <label class="cancel-form-label">หมายเหตุเพิ่มเติม</label>
+              <textarea id="cancelNote" class="cancel-form-input" rows="2" placeholder="หมายเหตุ (ถ้ามี)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="cancel-section">
+          <div class="cancel-section-title">📋 สรุปยอดค้างชำระทั้งหมด</div>
+          <div id="cancelBillSummary">กำลังโหลด...</div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:4px;">
+          <button onclick="closeCancelModal()" style="padding:9px 18px; background:#e4d6c4; color:#6b3b1c; border:none; border-radius:999px; cursor:pointer; font-weight:700;">ยกเลิก</button>
+          <button id="cancelConfirmBtn" onclick="confirmCancelBooking()" style="padding:9px 18px; background:#c0392b; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700;">✅ ยืนยันยกเลิกสัญญา (ชำระแล้ว)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h3>แก้ไขข้อมูลผู้เช่า</h3>
+      <p class="small" id="editRoomLabel"></p>
+
+      <label>ชื่อผู้เช่า</label>
+      <input type="text" id="editTenantName">
+
+      <label>เบอร์ติดต่อ</label>
+      <input type="text" id="editPhone">
+
+      <label>เลขบัตรประชาชน / เลขพาสปอร์ต</label>
+      <input type="text" id="editIdNumber">
+
+      <label>ค่าเช่ารายเดือน (บาท)</label>
+      <input type="number" id="editMonthlyRent">
+
+      <label>ระยะเวลาเช่า (เดือน)</label>
+      <input type="number" id="editLeaseDuration" min="1" step="1">
+
+      <label>วันที่เริ่มเช่า</label>
+      <input type="date" id="editStartDate">
+
+      <p id="editModalError" class="small" style="color:red;"></p>
+
+      <div class="modal-buttons">
+        <button onclick="closeEditModal()">ยกเลิก</button>
+        <button onclick="saveEditTenant()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="rental-calc.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const db = window.getSupabaseClient();
+
+    let currentBookings = [];
+    let editIndex = null;
+    let currentUser = null;
+    let currentUserRole = "viewer";
+
+    function filterTable() {
+      const search = (document.getElementById("searchInput").value || "").toLowerCase().trim();
+      const statusFilter = document.getElementById("statusFilter").value;
+      const rows = document.querySelectorAll("#combinedTable tbody tr");
+      rows.forEach(tr => {
+        const room = tr.dataset.room || "";
+        const name = tr.dataset.name || "";
+        const status = tr.dataset.status || "";
+        const matchSearch = !search || room.includes(search) || name.includes(search);
+        const matchStatus = statusFilter === "all" || status === statusFilter;
+        tr.style.display = matchSearch && matchStatus ? "" : "none";
+      });
+    }
+
+    function isAdmin() {
+      return currentUserRole === "admin";
+    }
+
+    function updateRoleBadge() {
+      const badge = document.getElementById("roleBadge");
+      if (!badge) return;
+
+      if (currentUserRole === "admin") {
+        badge.textContent = "สิทธิ์: admin";
+        badge.style.background = "#dff3e2";
+        badge.style.color = "#2f7d32";
+      } else if (currentUserRole === "staff") {
+        badge.textContent = "สิทธิ์: staff";
+        badge.style.background = "#fff1d6";
+        badge.style.color = "#9a5b00";
+      } else {
+        badge.textContent = "สิทธิ์: viewer";
+        badge.style.background = "#ececec";
+        badge.style.color = "#666";
+      }
+    }
+
+    async function loadCurrentUserRole() {
+      try {
+        const { data: userData, error: userError } = await db.auth.getUser();
+
+        if (userError) {
+          currentUser = null;
+          currentUserRole = "viewer";
+          updateRoleBadge();
+          return;
+        }
+
+        currentUser = userData?.user || null;
+
+        if (!currentUser) {
+          currentUserRole = "viewer";
+          updateRoleBadge();
+          return;
+        }
+
+        const { data: roleRow, error: roleError } = await db
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (roleError) {
+          currentUserRole = "viewer";
+          updateRoleBadge();
+          return;
+        }
+
+        currentUserRole = roleRow?.role || "viewer";
+        updateRoleBadge();
+      } catch (e) {
+        currentUserRole = "viewer";
+        updateRoleBadge();
+      }
+    }
+
+    function openRoomPlan() {
+      const returnTo = "monthly_tenants.html";
+      window.location.href = `room_plan.html?mode=monthly&return_to=${encodeURIComponent(returnTo)}`;
+    }
+
+    (function loadSelectedRoomFromStorage() {
+      const roomInput = document.getElementById("room");
+      if (!roomInput) return;
+
+      const pickedRoom = sessionStorage.getItem("picked_room_number");
+      if (pickedRoom) {
+        roomInput.value = pickedRoom;
+        sessionStorage.removeItem("picked_room_number");
+        sessionStorage.removeItem("picked_room_type");
+        sessionStorage.removeItem("picked_room_reservation_id");
+      }
+    })();
+
+    (function setDefaultStartDate() {
+      const input = document.getElementById("startDate");
+      if (input && !input.value) {
+        input.value = todayStr();
+      }
+    })();
+
+    function printCombinedPage() {
+      const now = new Date();
+      document.getElementById("printMeta").textContent =
+        "พิมพ์เมื่อ: " + formatDisplayDateTime(now);
+      window.print();
+    }
+
+    async function getSharedAvailabilityForMonthly(roomNumber, startDate, leaseMonths) {
+      const { data: roomRow, error: roomErr } = await db
+        .from("rooms")
+        .select("room_number, room_type")
+        .eq("room_number", roomNumber)
+        .single();
+
+      if (roomErr || !roomRow) {
+        return { ok: false, message: "ไม่พบข้อมูลห้องที่เลือก" };
+      }
+
+      const roomType = normalizeRoomType(roomRow.room_type);
+      if (!roomType) {
+        return { ok: false, message: "ห้องนี้ยังไม่มี room_type ในระบบ" };
+      }
+
+      const newStart = parseDate(startDate);
+      const newEnd = parseDate(computeEndDate(startDate, leaseMonths));
+
+      if (!newStart || !newEnd) {
+        return { ok: false, message: "วันที่เริ่มเช่าหรือระยะเวลาเช่าไม่ถูกต้อง" };
+      }
+
+      const { data: roomsData, error: roomsErr } = await db
+        .from("rooms")
+        .select("room_number, room_type");
+
+      if (roomsErr) {
+        return { ok: false, message: "โหลดข้อมูล rooms ไม่สำเร็จ: " + roomsErr.message };
+      }
+
+      const totalOfType = (roomsData || []).filter(r =>
+        normalizeRoomType(r.room_type) === roomType
+      ).length;
+
+      const roomTypeByRoom = {};
+      (roomsData || []).forEach(r => {
+        const rn = String(r.room_number || "").trim();
+        if (!rn) return;
+        roomTypeByRoom[rn] = normalizeRoomType(r.room_type);
+      });
+
+      const { data: monthlyBookings, error: monthlyErr } = await db
+        .from("bookings")
+        .select("id, room_number, rent_type, status, checkin_date, lease_duration")
+        .eq("rent_type", "monthly")
+        .eq("status", "active");
+
+      if (monthlyErr) {
+        return { ok: false, message: "โหลดข้อมูล bookings รายเดือนไม่สำเร็จ: " + monthlyErr.message };
+      }
+
+      let monthlyUsed = 0;
+
+      (monthlyBookings || []).forEach(b => {
+        const existingRoomType = roomTypeByRoom[String(b.room_number || "").trim()] || "";
+        if (existingRoomType !== roomType) return;
+
+        const exStart = parseDate(b.checkin_date);
+        const exEnd = parseDate(computeEndDate(b.checkin_date, b.lease_duration));
+        if (!exStart || !exEnd) return;
+
+        if (dateRangesOverlap(newStart, newEnd, exStart, exEnd)) {
+          monthlyUsed += 1;
+        }
+      });
+
+      const { data: dailyReservations, error: dailyErr } = await db
+        .from("reservations")
+        .select(`
+          check_in_date,
+          check_out_date,
+          status,
+          reservation_rooms (room_type, room_count)
+        `)
+        .in("status", ["pending", "confirmed", "checked_in"]);
+
+      if (dailyErr) {
+        return { ok: false, message: "โหลดข้อมูล reservations รายวันไม่สำเร็จ: " + dailyErr.message };
+      }
+
+      let dailyUsed = 0;
+
+      (dailyReservations || []).forEach(r => {
+        const exStart = parseDate(r.check_in_date);
+        const exEnd = parseDate(r.check_out_date);
+        if (!exStart || !exEnd) return;
+
+        if (!dateRangesOverlap(newStart, newEnd, exStart, exEnd)) return;
+
+        (r.reservation_rooms || []).forEach(rr => {
+          if (normalizeRoomType(rr.room_type) === roomType) {
+            dailyUsed += Number(rr.room_count || 0);
+          }
+        });
+      });
+
+      const available = totalOfType - monthlyUsed - dailyUsed;
+
+      if (available <= 0) {
+        return {
+          ok: false,
+          message: `ห้องประเภท ${roomType} ไม่ว่างแล้วในช่วงเวลานี้ (คงเหลือ 0 ห้อง)`
+        };
+      }
+
+      return {
+        ok: true,
+        roomType,
+        totalOfType,
+        monthlyUsed,
+        dailyUsed,
+        available
+      };
+    }
+
+    async function renderCombinedTable() {
+      const tbody = document.querySelector("#combinedTable tbody");
+      tbody.innerHTML = "";
+
+      try {
+        const [
+          { data: bookingsData, error: bookingErr },
+          { data: paymentsData, error: paymentErr },
+          { data: utilityData, error: utilityErr },
+          { data: otherCostData, error: otherCostErr }
+        ] = await Promise.all([
+          db.from("bookings")
+            .select(`
+              id,
+              room_number,
+              tenant_name,
+              phone,
+              id_number,
+              rent_type,
+              checkin_date,
+              checkout_date,
+              lease_duration,
+              status,
+              created_at,
+              updated_at,
+              monthly_rent,
+              deposit,
+              stopped_at
+            `)
+            .eq("rent_type", "monthly")
+            .in("status", ["active", "ended"]),
+
+          db.from("payments").select("*"),
+          db.from("utility_readings").select("room_number, read_date, water_amount, electric_amount"),
+          db.from("other_costs").select("*")
+        ]);
+
+        if (bookingErr) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="8" style="color:red;">ไม่สามารถดึงข้อมูล bookings ได้: ${bookingErr.message}</td>`;
+          tbody.appendChild(tr);
+          updateEndedSummary(0);
+          return;
+        }
+
+        const payments = paymentErr ? [] : (paymentsData || []);
+        const extraBills = [];
+        const utilityReadings = utilityErr ? [] : (utilityData || []);
+        const otherCosts = otherCostErr ? [] : (otherCostData || []);
+        // Cache for cancel modal
+        _paymentsCache = payments;
+        _extraBillsCache = extraBills;
+        _utilityReadingsCache = utilityReadings;
+        _otherCostsCache = otherCosts;
+
+        if (!bookingsData || bookingsData.length === 0) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="8">ยังไม่มีข้อมูลผู้เช่าในระบบ</td>`;
+          tbody.appendChild(tr);
+          currentBookings = [];
+          updateEndedSummary(0);
+          return;
+        }
+
+        const normalized = bookingsData.map(item => {
+          const computedEnded = isExpiredMonthlyBooking(item);
+          const uiStatus = computedEnded || item.status === "ended" ? "ended" : "active";
+
+          return {
+            ...item,
+            ui_status: uiStatus,
+            computed_end_date: computeEndDate(item.checkin_date, item.lease_duration)
+          };
+        });
+
+        normalized.sort((a, b) => {
+          if (a.ui_status !== b.ui_status) {
+            return a.ui_status === "ended" ? -1 : 1;
+          }
+          return String(a.room_number || "").localeCompare(String(b.room_number || ""));
+        });
+
+        currentBookings = normalized.slice();
+        updateEndedSummary(normalized.filter(x => x.ui_status === "ended").length);
+
+        normalized.forEach((bk, idx) => {
+          const roomNumber = bk.room_number || "-";
+          const tenantName = bk.tenant_name || "-";
+          const phone = bk.phone || "-";
+          const idNumber = bk.id_number || "-";
+          const startDate = bk.checkin_date || "-";
+          const endDate = bk.computed_end_date || "-";
+          const monthlyRent = Number(bk.monthly_rent || 0);
+          const deposit = Number(bk.deposit || 0);
+          const leaseMonths = bk.lease_duration || "-";
+          const updated = bk.updated_at || bk.created_at || "-";
+          const ended = bk.ui_status === "ended";
+
+          const calc = calculatePaymentAllocationOldestFirst(bk, _paymentsCache, _extraBillsCache, _utilityReadingsCache, _otherCostsCache);
+          const orderedMonths = calc.months
+            .filter(ms => ms.diff > 0)
+            .concat(calc.months.filter(ms => ms.diff <= 0));
+
+          const monthLines = orderedMonths.map(ms => {
+            // Hide fully paid months — only show unpaid or partial
+            if (ms.diff <= 0) return null;
+
+            const typeClass = ms.diff > 0 ? "debt" : "ok";
+            const overdueTag = ms.isOverdue && ms.diff > 0
+              ? `<span class="overdue-tag">ค้างเก่า</span>`
+              : "";
+            const currentTag = ms.isCurrent && ms.diff > 0
+              ? `<span class="current-month-tag">เดือนนี้</span>`
+              : "";
+
+            return `
+              <li class="month-item ${typeClass}">
+                <div class="month-header">
+                  <span class="month-label">${ms.label}</span>
+                  <span>
+                    <span class="${ms.statusClass}">${ms.statusText}</span>
+                    ${overdueTag}
+                    ${currentTag}
+                  </span>
+                </div>
+                <div class="month-detail">
+                  ${ms.detailLine1}
+                  <br>${ms.detailLine2}<br>
+                  ${ms.detailLine3}
+                </div>
+              </li>
+            `;
+          }).filter(Boolean).join("");
+
+          // Pending box for current period utility (not yet due)
+          const currentPeriodRow = calc.months.find(ms => ms.isCurrentPeriod);
+          let pendingBox = "";
+          if (currentPeriodRow && (currentPeriodRow.pendingWater > 0 || currentPeriodRow.pendingElectric > 0)) {
+            const lastRead = (_utilityReadingsCache || [])
+              .filter(u => String(u.room_number) === String(bk.room_number) && u.read_date)
+              .sort((a, b) => b.read_date.localeCompare(a.read_date))[0];
+            const lastReadDate = lastRead ? lastRead.read_date : "-";
+            const pendingTotal = currentPeriodRow.pendingWater + currentPeriodRow.pendingElectric;
+            const coveredByCredit = (calc.extraCredit + calc.depositCredit) >= pendingTotal;
+            pendingBox = `
+              <li class="month-item-pending" style="${coveredByCredit ? "background:#f0faf5; border-color:#a8d5b5;" : ""}">
+                <div class="month-header">
+                  <span class="month-label">${currentPeriodRow.label} — ค่าน้ำ/ไฟสะสมถึงปัจจุบัน</span>
+                  <span class="status-pending">ยังไม่ถึงกำหนดชำระ</span>
+                </div>
+                <div class="month-detail">
+                  ค่าน้ำสะสม = <b>${currentPeriodRow.pendingWater.toFixed(2)} บาท</b>
+                  &nbsp;&nbsp;&nbsp; ค่าไฟสะสม = <b>${currentPeriodRow.pendingElectric.toFixed(2)} บาท</b>
+                  <br>รวม = <b>${pendingTotal.toFixed(2)} บาท</b>
+                  &nbsp;&nbsp;&nbsp; <span style="color:#888; font-size:11px;">อ่านมิเตอร์ล่าสุด: ${lastReadDate}</span>
+                </div>
+              </li>`;
+          }
+
+          const totalDebtText = calc.totalDebt > 0
+            ? `<span class="debt-text">${calc.totalDebt.toFixed(2)} บาท</span>`
+            : `<span class="no-debt-text">0.00 บาท</span>`;
+
+          const totalRequiredText = `<span class="bill-text">${calc.totalRequired.toFixed(2)} บาท</span>`;
+          const totalPaidText = `<span class="paid-text">${calc.totalPaidApplied.toFixed(2)} บาท</span>`;
+          const depositCreditText = calc.depositCredit > 0
+            ? `<br>เงินประกัน (เครดิต): <span class="extra-text">${calc.depositCredit.toFixed(2)} บาท</span>`
+            : "";
+          const extraCreditText = calc.extraCredit > 0
+            ? `<br>เครดิตอื่น: <span class="extra-text">${calc.extraCredit.toFixed(2)} บาท</span>`
+            : "";
+
+          let actionHtml = `<span class="admin-note">เฉพาะ admin</span>`;
+          if (isAdmin()) {
+            if (ended) {
+              actionHtml = `
+                <button class="btn-ended" onclick="openCancelModal(${idx})">สิ้นสุดสัญญา</button>
+                <button onclick="goToHistory('${roomNumber}')">ประวัติ</button>
+              `;
+            } else {
+              actionHtml = `
+                <button onclick="openEditModal(${idx})">แก้ไข</button>
+                <button class="btn-danger" id="cancelBtn-${idx}" onclick="openCancelModal(${idx})">ยกเลิกสัญญา</button>
+                <button onclick="goToHistory('${roomNumber}')">ประวัติ</button>
+              `;
+            }
+          }
+
+          const isOverdue = !ended && calc.totalDebt > 0;
+          const tr = document.createElement("tr");
+          if (ended) tr.classList.add("ended-row");
+          if (isOverdue) tr.classList.add("overdue-row");
+          tr.dataset.room = roomNumber.toLowerCase();
+          tr.dataset.name = tenantName.toLowerCase();
+          tr.dataset.status = ended ? "ended" : isOverdue ? "overdue" : "active";
+
+          tr.innerHTML = `
+            <td style="font-size:12px; color:#888; white-space:nowrap;">#${String(bk.id).padStart(6,"0")}</td>
+            <td>${roomNumber}</td>
+            <td>
+              <div>${tenantName}</div>
+              <div class="small">${phone}</div>
+            </td>
+            <td>${idNumber}</td>
+            <td>
+              <div>เริ่ม: ${startDate}</div>
+              <div class="small">สิ้นสุด: ${endDate}</div>
+              <div class="small ${ended ? "status-ended" : "status-active"}">
+                ${ended ? "หมดสัญญาแล้ว" : "กำลังเช่า"}
+              </div>
+            </td>
+            <td>
+              <div>${monthlyRent.toFixed(2)} บาท</div>
+              <div class="small">${leaseMonths} เดือน</div>
+              ${deposit > 0 ? `<div class="small" style="color:#2a7a4b; margin-top:2px;">มัดจำ: ${deposit.toFixed(2)} บาท</div>` : ""}
+            </td>
+            <td>
+              <div class="room-total-debt">
+                ยอดตามบิลรวม: ${totalRequiredText}<br>
+                ตัดจ่ายแล้วรวม: ${totalPaidText}<br>
+                ยอดค้างรวมตอนนี้: ${totalDebtText}
+                ${depositCreditText}
+                ${extraCreditText}
+              </div>
+              <ul class="month-list">
+                ${pendingBox}
+            ${monthLines || '<li class="month-item ok">ยังไม่มีเดือนที่ต้องคำนวณ</li>'}
+              </ul>
+            </td>
+            <td class="small">${updated}</td>
+            <td>${actionHtml}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        if (!tbody.hasChildNodes()) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td colspan="8">ยังไม่มีข้อมูลที่แสดงได้</td>`;
+          tbody.appendChild(tr);
+        }
+
+      } catch (e) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="8" style="color:red;">เกิดข้อผิดพลาดขณะโหลดข้อมูล: ${e.message}</td>`;
+        tbody.appendChild(tr);
+        updateEndedSummary(0);
+      }
+    }
+
+    async function saveTenant() {
+      const room = document.getElementById("room").value.trim();
+      const tenantName = document.getElementById("tenantName").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const idNumber = document.getElementById("idNumber").value.trim();
+      const monthlyRent = document.getElementById("monthlyRent").value.trim();
+      let startDate = document.getElementById("startDate").value.trim();
+      const leaseDurationValue = document.getElementById("leaseDuration").value.trim();
+      const msg = document.getElementById("message");
+
+      msg.textContent = "";
+      msg.style.color = "green";
+
+      if (!room || !tenantName || !monthlyRent) {
+        msg.style.color = "red";
+        msg.textContent = "กรุณาเลือกห้อง และกรอกชื่อผู้เช่าและค่าเช่าให้ครบถ้วน";
+        return;
+      }
+
+      if (!startDate) {
+        startDate = todayStr();
+      }
+
+      if (!leaseDurationValue) {
+        msg.style.color = "red";
+        msg.textContent = "กรุณากรอกระยะเวลาเช่าเป็นจำนวนเดือน";
+        return;
+      }
+
+      const months = Number(leaseDurationValue);
+      if (Number.isNaN(months) || months <= 0) {
+        msg.style.color = "red";
+        msg.textContent = "กรุณากรอกระยะเวลาเช่าเป็นจำนวนเดือน (ตัวเลขมากกว่า 0)";
+        return;
+      }
+
+      const newEndStr = computeEndDate(startDate, months);
+      const newStartD = parseDate(startDate);
+      const newEndD = parseDate(newEndStr);
+
+      if (!newStartD || !newEndD) {
+        msg.style.color = "red";
+        msg.textContent = "วันที่เริ่มเช่าหรือระยะเวลาเช่าไม่ถูกต้อง";
+        return;
+      }
+
+      try {
+        const { data: roomRows, error: roomError } = await db
+          .from("rooms")
+          .select("id, room_number, status, room_type")
+          .eq("room_number", room);
+
+        if (roomError) {
+          msg.style.color = "red";
+          msg.textContent = "เกิดข้อผิดพลาดขณะตรวจสอบข้อมูลห้อง: " + roomError.message;
+          return;
+        }
+
+        let roomRow = roomRows && roomRows.length > 0 ? roomRows[0] : null;
+
+        if (!roomRow) {
+          const { data: newRoom, error: newRoomErr } = await db
+            .from("rooms")
+            .insert({
+              room_number: room,
+              status: "vacant",
+              room_type: "standard"
+            })
+            .select()
+            .single();
+
+          if (newRoomErr) {
+            msg.style.color = "red";
+            msg.textContent = "เกิดข้อผิดพลาดขณะบันทึกข้อมูลห้อง: " + newRoomErr.message;
+            return;
+          }
+
+          roomRow = newRoom;
+        }
+
+        const { data: existBookings, error: existErr } = await db
+          .from("bookings")
+          .select("id, rent_type, status, room_number, checkin_date, checkout_date, lease_duration")
+          .eq("room_number", room);
+
+        if (existErr) {
+          msg.style.color = "red";
+          msg.textContent = "เกิดข้อผิดพลาดขณะตรวจสอบสัญญาเดิมของห้องนี้: " + existErr.message;
+          return;
+        }
+
+        const ACTIVE_STATUSES = ["active", "reserved", "pending"];
+        const activeBookings = (existBookings || []).filter(b => ACTIVE_STATUSES.includes(b.status));
+
+        let hasOverlap = false;
+        let overlapInfo = "";
+
+        activeBookings.forEach(b => {
+          let exStartStr = null;
+          let exEndStr = null;
+
+          if (b.rent_type === "monthly") {
+            if (!b.checkin_date || !b.lease_duration) return;
+            exStartStr = b.checkin_date;
+            exEndStr = computeEndDate(b.checkin_date, b.lease_duration);
+          } else if (b.rent_type === "daily") {
+            if (!b.checkin_date) return;
+            exStartStr = b.checkin_date;
+            exEndStr = b.checkout_date || b.checkin_date;
+          }
+
+          const exStartD = parseDate(exStartStr);
+          const exEndD = parseDate(exEndStr);
+
+          if (!exStartD || !exEndD) return;
+
+          if (dateRangesOverlap(newStartD, newEndD, exStartD, exEndD)) {
+            hasOverlap = true;
+            overlapInfo = `มีสัญญาเดิม (${b.rent_type}) ช่วง ${exStartStr} ถึง ${exEndStr}`;
+          }
+        });
+
+        if (hasOverlap) {
+          msg.style.color = "red";
+          msg.textContent =
+            "ไม่สามารถสร้างสัญญาใหม่ได้ เนื่องจากช่วงเวลานี้ทับกับสัญญาเดิมของห้องนี้\n" +
+            overlapInfo;
+          return;
+        }
+
+        const availability = await getSharedAvailabilityForMonthly(room, startDate, months);
+        if (!availability.ok) {
+          msg.style.color = "red";
+          msg.textContent = availability.message;
+          return;
+        }
+
+        const { error: bookingError } = await db
+          .from("bookings")
+          .insert({
+            room_number: room,
+            tenant_name: tenantName,
+            phone: phone,
+            id_number: idNumber || "",
+            rent_type: "monthly",
+            checkin_date: startDate,
+            lease_duration: months,
+            status: "active",
+            monthly_rent: monthlyRent,
+            deposit: Number(document.getElementById("depositAmount").value || 0)
+          });
+
+        if (bookingError) {
+          msg.style.color = "red";
+          msg.textContent = "เกิดข้อผิดพลาดขณะบันทึกสัญญาเช่า: " + bookingError.message;
+          return;
+        }
+
+        await db
+          .from("rooms")
+          .update({ status: "occupied" })
+          .eq("room_number", room);
+
+        document.getElementById("room").value = "";
+        document.getElementById("tenantName").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("idNumber").value = "";
+        document.getElementById("monthlyRent").value = "";
+        document.getElementById("leaseDuration").value = "";
+        // Reload default deposit from settings
+        const { data: sd } = await db.from("utility_settings").select("default_deposit").limit(1).single();
+        document.getElementById("depositAmount").value = sd?.default_deposit ?? 0;
+        document.getElementById("startDate").value = todayStr();
+
+        msg.style.color = "green";
+        msg.textContent = "บันทึกข้อมูลเรียบร้อยแล้ว";
+        alert("✅ บันทึกข้อมูลผู้เช่าและสัญญาเช่าเรียบร้อยแล้ว");
+
+        await renderCombinedTable();
+      } catch (e) {
+        msg.style.color = "red";
+        msg.textContent = "เกิดข้อผิดพลาดขณะบันทึกข้อมูล: " + e.message;
+      }
+    }
+
+    function openEditModal(index) {
+      if (!isAdmin()) {
+        alert("❌ เฉพาะ admin เท่านั้นที่สามารถแก้ไขข้อมูลได้");
+        return;
+      }
+
+      if (index < 0 || index >= currentBookings.length) return;
+
+      const bk = currentBookings[index];
+      if (bk.ui_status === "ended") {
+        alert("❌ สัญญาที่หมดอายุแล้วไม่สามารถแก้ไขได้");
+        return;
+      }
+
+      editIndex = index;
+
+      document.getElementById("editRoomLabel").textContent = "ห้อง " + (bk.room_number || "-");
+      document.getElementById("editTenantName").value = bk.tenant_name || "";
+      document.getElementById("editPhone").value = bk.phone || "";
+      document.getElementById("editIdNumber").value = bk.id_number || "";
+      document.getElementById("editMonthlyRent").value = bk.monthly_rent || "";
+      document.getElementById("editLeaseDuration").value = bk.lease_duration || "";
+      document.getElementById("editStartDate").value = bk.checkin_date || "";
+
+      document.getElementById("editModalError").textContent = "";
+      document.getElementById("editModalBackdrop").classList.add("show");
+    }
+
+    function closeEditModal() {
+      editIndex = null;
+      document.getElementById("editModalBackdrop").classList.remove("show");
+    }
+
+    async function saveEditTenant() {
+      const errorEl = document.getElementById("editModalError");
+      errorEl.textContent = "";
+
+      if (!isAdmin()) {
+        errorEl.textContent = "เฉพาะ admin เท่านั้นที่สามารถแก้ไขข้อมูลได้";
+        return;
+      }
+
+      if (editIndex === null || editIndex < 0 || editIndex >= currentBookings.length) {
+        closeEditModal();
+        return;
+      }
+
+      const bk = currentBookings[editIndex];
+      if (bk.ui_status === "ended") {
+        errorEl.textContent = "สัญญาที่หมดอายุแล้วไม่สามารถแก้ไขได้";
+        return;
+      }
+
+      const newName = document.getElementById("editTenantName").value.trim();
+      const newPhone = document.getElementById("editPhone").value.trim();
+      const newIdNo = document.getElementById("editIdNumber").value.trim();
+      const newRent = document.getElementById("editMonthlyRent").value.trim();
+      const newMonths = document.getElementById("editLeaseDuration").value.trim();
+      const newStart = document.getElementById("editStartDate").value.trim();
+
+      if (!newName || !newRent || !newMonths) {
+        errorEl.textContent = "กรุณากรอกชื่อผู้เช่า ค่าเช่า และระยะเวลาเช่าให้ครบถ้วน";
+        return;
+      }
+
+      const monthsNum = Number(newMonths);
+      if (Number.isNaN(monthsNum) || monthsNum <= 0) {
+        errorEl.textContent = "ระยะเวลาเช่าต้องเป็นตัวเลขมากกว่า 0";
+        return;
+      }
+
+      try {
+        const { error: bookingErr } = await db
+          .from("bookings")
+          .update({
+            tenant_name: newName,
+            phone: newPhone,
+            id_number: newIdNo,
+            monthly_rent: newRent,
+            lease_duration: monthsNum,
+            checkin_date: newStart || bk.checkin_date
+          })
+          .eq("id", bk.id);
+
+        if (bookingErr) {
+          errorEl.textContent = "เกิดข้อผิดพลาดขณะอัปเดตข้อมูลสัญญา: " + bookingErr.message;
+          return;
+        }
+
+        closeEditModal();
+        alert("✅ อัปเดตข้อมูลผู้เช่าสำเร็จ");
+        await renderCombinedTable();
+      } catch (e) {
+        errorEl.textContent = "เกิดข้อผิดพลาดขณะอัปเดตข้อมูล: " + e.message;
+      }
+    }
+
+    async function moveBookingToHistoryAndDelete(booking, archiveAction, cancelData = {}) {
+      const archivedBy = currentUser?.id || null;
+      const finalCheckoutDate = cancelData.cancelled_at || booking.checkout_date || booking.computed_end_date || null;
+
+      const historyRecord = {
+        original_booking_id: booking.id,
+        room_number: booking.room_number,
+        tenant_name: booking.tenant_name,
+        phone: booking.phone,
+        id_number: booking.id_number,
+        rent_type: booking.rent_type,
+        checkin_date: booking.checkin_date,
+        checkout_date: finalCheckoutDate,
+        lease_duration: booking.lease_duration,
+        monthly_rent: booking.monthly_rent || null,
+        deposit: booking.deposit || 0,
+        original_status: booking.status,
+        archive_action: archiveAction,
+        archived_by: archivedBy,
+        note: cancelData.cancel_note || (archiveAction === "ended" ? "หมดสัญญาและย้ายเข้าประวัติ" : "ยกเลิกสัญญาและย้ายเข้าประวัติ"),
+        ...(archiveAction === "cancelled" ? {
+          cancel_payment_method: cancelData.cancel_payment_method || null,
+          cancel_extra_cost: cancelData.cancel_extra_cost || 0,
+          cancel_extra_payment_method: cancelData.cancel_extra_payment_method || null,
+          cancel_extra_detail: cancelData.cancel_extra_detail || null,
+          cancel_refund: cancelData.cancel_refund || 0,
+          cancel_note: cancelData.cancel_note || null,
+          cancel_pay_detail: cancelData.cancel_pay_detail || null,
+          cancelled_at: cancelData.cancelled_at || null
+        } : {})
+      };
+
+      const { error: historyErr } = await db
+        .from("rental_history")
+        .insert(historyRecord);
+
+      if (historyErr) {
+        throw new Error("บันทึกประวัติไม่สำเร็จ: " + historyErr.message);
+      }
+
+      const { error: deleteErr } = await db
+        .from("bookings")
+        .delete()
+        .eq("id", booking.id);
+
+      if (deleteErr) {
+        throw new Error("ลบข้อมูล booking ไม่สำเร็จ: " + deleteErr.message);
+      }
+
+      const { data: remainRows, error: remainErr } = await db
+        .from("bookings")
+        .select("id")
+        .eq("room_number", booking.room_number)
+        .limit(1);
+
+      if (remainErr) {
+        throw new Error("ตรวจสอบ booking คงเหลือไม่สำเร็จ: " + remainErr.message);
+      }
+
+      if (!remainRows || remainRows.length === 0) {
+        const { error: roomErr } = await db
+          .from("rooms")
+          .update({ status: "vacant" })
+          .eq("room_number", booking.room_number);
+
+        if (roomErr) {
+          throw new Error("อัปเดตสถานะห้องไม่สำเร็จ: " + roomErr.message);
+        }
+      }
+    }
+
+    async function endBookingAndMoveToHistory(index) {
+      if (!isAdmin()) {
+        alert("❌ เฉพาะ admin เท่านั้น");
+        return;
+      }
+
+      if (index < 0 || index >= currentBookings.length) return;
+      const bk = currentBookings[index];
+
+      if (bk.ui_status !== "ended") {
+        alert("❌ สัญญานี้ยังไม่หมดอายุ");
+        return;
+      }
+
+      const ok = confirm(
+        `ต้องการสิ้นสุดสัญญาห้อง ${bk.room_number || "-"} ใช่หรือไม่?\nระบบจะเก็บข้อมูลลงประวัติ และลบออกจาก bookings`
+      );
+      if (!ok) return;
+
+      try {
+        await moveBookingToHistoryAndDelete(bk, "ended");
+        alert("✅ สิ้นสุดสัญญาเรียบร้อย และย้ายไปประวัติแล้ว");
+        await renderCombinedTable();
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    }
+
+    let cancelBookingIndex = -1;
+    // Module-level cache for use in cancel modal
+    let _paymentsCache = [];
+    let _extraBillsCache = [];
+    let _utilityReadingsCache = [];
+    let _otherCostsCache = [];
+
+    function updateCancelSummary() {
+      const _calc = window._cancelCalc;
+      const _bk = window._cancelBk;
+      if (!_calc || !_bk) return;
+
+      const deposit = Number(_bk.deposit || 0);
+      const extraCost = Number(document.getElementById("cancelExtraCost").value || 0);
+      const refund = Number(document.getElementById("cancelRefund").value || 0);
+      const utilTotal = Number(window._cancelUtilTotal || 0);
+      const extraCredit = Number(_calc.extraCredit || 0);
+
+      let billHtml = "";
+      _calc.months.forEach(ms => {
+        const color = ms.diff > 0 ? "#c0392b" : "#27ae60";
+        billHtml += `<div class="cancel-row"><span>${ms.label}</span><span style="color:${color}; font-weight:700;">${ms.diff > 0 ? "ค้าง " + ms.diff.toFixed(2) : "ชำระแล้ว"}</span></div>`;
+      });
+
+      if (utilTotal > 0) {
+        billHtml += `<div class="cancel-row" style="margin-top:4px;">
+          <span>ค่าน้ำ+ไฟงวดสุดท้าย</span>
+          <span style="color:#e67e22; font-weight:700;">+ ${utilTotal.toFixed(2)} บาท</span>
+        </div>`;
+      }
+
+      if (extraCost > 0) {
+        billHtml += `<div class="cancel-row" style="margin-top:4px;">
+          <span>ค่าใช้จ่ายเพิ่มเติม</span>
+          <span style="color:#c0392b; font-weight:700;">+ ${extraCost.toFixed(2)} บาท</span>
+        </div>`;
+      }
+
+      if (extraCredit > 0) {
+        billHtml += `<div class="cancel-row" style="margin-top:4px;">
+          <span>ยอดจ่ายเกินสะสม</span>
+          <span style="color:#27ae60; font-weight:700;">- ${extraCredit.toFixed(2)} บาท</span>
+        </div>`;
+      }
+
+      const subtotal = Math.max(0, _calc.totalDebt + utilTotal + extraCost - extraCredit);
+
+      billHtml += `<div class="cancel-row" style="margin-top:6px; border-top:1px dashed #e1c89c; padding-top:6px;">
+        <span><b>ยอดรวมทั้งหมด</b></span>
+        <span class="cancel-total">${subtotal.toFixed(2)} บาท</span>
+      </div>`;
+
+      if (deposit > 0) {
+        billHtml += `<div class="cancel-row" style="margin-top:4px;">
+          <span>หักเงินมัดจำ (${deposit.toFixed(2)} บาท)</span>
+          <span style="color:#27ae60; font-weight:700;">- ${deposit.toFixed(2)} บาท</span>
+        </div>`;
+      }
+
+      if (refund > 0) {
+        billHtml += `<div class="cancel-row" style="margin-top:4px;">
+          <span>การคืนเงิน</span>
+          <span style="color:#27ae60; font-weight:700;">- ${refund.toFixed(2)} บาท</span>
+        </div>`;
+      }
+
+      const finalDue = Math.max(0, subtotal - deposit - refund);
+      const actualRefund = subtotal - deposit - refund < 0 ? Math.abs(subtotal - deposit - refund) : 0;
+
+      billHtml += `<div class="cancel-row" style="margin-top:6px; border-top:2px solid #c0392b; padding-top:8px;">
+        <span><b style="font-size:14px;">${actualRefund > 0 ? "คืนเงินลูกค้า" : "ยอดที่ต้องชำระสุทธิ"}</b></span>
+        <span style="color:${actualRefund > 0 ? "#27ae60" : "#c0392b"}; font-weight:800; font-size:15px;">
+          ${actualRefund > 0 ? actualRefund.toFixed(2) + " บาท (คืน)" : finalDue.toFixed(2) + " บาท"}
+        </span>
+      </div>`;
+
+      document.getElementById("cancelBillSummary").innerHTML = billHtml;
+    }
+
+    function closeCancelModal() {
+      document.getElementById("cancelModalBackdrop").classList.remove("show");
+      cancelBookingIndex = -1;
+    }
+
+    async function openCancelModal(index) {
+      if (!isAdmin()) { alert("❌ เฉพาะ admin เท่านั้น"); return; }
+      if (index < 0 || index >= currentBookings.length) return;
+      const bk = currentBookings[index];
+
+      cancelBookingIndex = index;
+      const today = todayStr();
+
+      document.getElementById("cancelRoomNo").textContent = bk.room_number || "-";
+      document.getElementById("cancelExtraCost").value = "";
+      document.getElementById("cancelExtraDetail").value = "";
+      document.getElementById("cancelRefund").value = "";
+      document.getElementById("cancelPayDetail").value = "";
+      document.getElementById("cancelExtraPayMethod").value = "";
+      document.getElementById("cancelPayMethod").value = "";
+      document.getElementById("cancelNote").value = "";
+
+      const btn = document.getElementById("cancelConfirmBtn");
+      const warn = document.getElementById("cancelUtilWarning");
+      warn.style.display = "none";
+      btn.disabled = false;
+      btn.style.cssText = "padding:9px 18px; background:#c0392b; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700;";
+
+      // Build bill summary using the same calc as the main table
+      const calc = calculatePaymentAllocationOldestFirst(bk, _paymentsCache, _extraBillsCache, _utilityReadingsCache, _otherCostsCache);
+      window._cancelCalc = calc;
+      window._cancelBk = bk;
+
+      // Always require today's meter reading before allowing cancellation
+      const { data: todayUtil } = await db
+        .from("utility_readings")
+        .select("id")
+        .eq("room_number", bk.room_number)
+        .eq("read_date", today)
+        .maybeSingle();
+
+      if (!todayUtil) {
+        warn.style.display = "block";
+        btn.disabled = true;
+        btn.style.cssText = "padding:9px 18px; border:none; border-radius:999px; font-weight:700; background:#bbb; color:#888; cursor:not-allowed;";
+      }
+
+      // Get pending utility from current period row (same data shown in main table)
+      const currentPeriodRow = calc.months.find(ms => ms.isCurrentPeriod);
+      const totalWater = currentPeriodRow ? currentPeriodRow.pendingWater : 0;
+      const totalElectric = currentPeriodRow ? currentPeriodRow.pendingElectric : 0;
+      const utilTotal = totalWater + totalElectric;
+
+      if (utilTotal > 0) {
+        document.getElementById("cancelUtilSummary").innerHTML =
+          `<div class="cancel-row">
+            <span>ค่าน้ำสะสม</span>
+            <span><b>${totalWater.toFixed(2)} บาท</b></span>
+          </div>` +
+          `<div class="cancel-row">
+            <span>ค่าไฟสะสม</span>
+            <span><b>${totalElectric.toFixed(2)} บาท</b></span>
+          </div>` +
+          `<div class="cancel-row" style="margin-top:8px; border-top:1px solid #e1c89c; padding-top:6px;">
+            <span><b>รวมค่าน้ำ+ไฟ</b></span>
+            <span><b style="color:#c0392b;">${utilTotal.toFixed(2)} บาท</b></span>
+          </div>`;
+      } else {
+        document.getElementById("cancelUtilSummary").innerHTML =
+          `<span style="color:#888;">ยังไม่มีค่าน้ำ/ไฟค้างในรอบนี้</span>`;
+      }
+
+      window._cancelUtilTotal = utilTotal;
+
+      // Pre-fill refund if deposit covers everything
+      const deposit2 = Number(bk.deposit || 0);
+      const extraCredit2 = Number(calc.extraCredit || 0);
+      const subtotal2 = Math.max(0, calc.totalDebt + utilTotal - extraCredit2);
+      const actualRefund2 = deposit2 > subtotal2 ? deposit2 - subtotal2 : 0;
+      if (actualRefund2 > 0) {
+        document.getElementById("cancelRefund").value = actualRefund2.toFixed(2);
+      }
+
+      updateCancelSummary();
+      document.getElementById("cancelModalBackdrop").classList.add("show");
+    }
+
+    async function confirmCancelBooking() {
+      if (cancelBookingIndex < 0) return;
+      const bk = currentBookings[cancelBookingIndex];
+      const today = todayStr();
+
+      const extraPayMethod = document.getElementById("cancelExtraPayMethod").value;
+      if (!extraPayMethod) { alert("กรุณาเลือกประเภทการชำระเงิน"); return; }
+
+      const extraCost = Number(document.getElementById("cancelExtraCost").value || 0);
+      const extraDetail = document.getElementById("cancelExtraDetail").value.trim();
+      const refund = Number(document.getElementById("cancelRefund").value || 0);
+      const refundDetail = document.getElementById("cancelPayDetail").value.trim();
+      const paymentDetail = document.getElementById("cancelPayMethod").value.trim();
+      const note = document.getElementById("cancelNote").value.trim();
+
+      try {
+        // Calculate the amount actually paid to settle outstanding balance
+        // depositBase is always used to offset — it's the held security deposit
+        const calc = window._cancelCalc;
+        const utilTotal = Number(window._cancelUtilTotal || 0);
+        const depositBase = Number(calc?.depositBase || 0);
+        const totalOwed = (calc?.totalDebt || 0) + utilTotal + extraCost;
+        const amountPaid = Math.max(0, totalOwed - depositBase - refund);
+
+        // Record payment if there's an amount to pay
+        if (amountPaid > 0) {
+          const { error: payErr } = await db.from("payments").insert({
+            booking_id: bk.id,
+            room_number: bk.room_number,
+            amount: amountPaid,
+            payment_method: extraPayMethod,
+            payment_detail: paymentDetail || null,
+            note: `ชำระตอนยกเลิกสัญญา${extraCost > 0 ? ` | ค่าใช้จ่ายเพิ่ม: ${extraCost}` : ""}${refund > 0 ? ` | คืนเงิน: ${refund}` : ""}${note ? ` | ${note}` : ""}`,
+            paid_at: new Date().toISOString()
+          });
+          if (payErr) {
+            console.warn("บันทึกการชำระเงินไม่สำเร็จ:", payErr.message);
+          }
+        }
+
+        await moveBookingToHistoryAndDelete(bk, "cancelled", {
+          cancel_payment_method: paymentDetail || null,
+          cancel_extra_cost: extraCost,
+          cancel_extra_payment_method: extraPayMethod || null,
+          cancel_extra_detail: extraDetail || null,
+          cancel_refund: refund,
+          cancel_note: note || null,
+          cancel_pay_detail: refundDetail || null,
+          cancelled_at: today
+        });
+        closeCancelModal();
+        alert("✅ ยกเลิกสัญญาเรียบร้อย และย้ายไปประวัติแล้ว");
+        await renderCombinedTable();
+      } catch (e) {
+        alert("❌ " + e.message);
+      }
+    }
+
+    async function initPage() {
+      await loadCurrentUserRole();
+      await renderCombinedTable();
+      // Load default deposit from settings
+      const { data: settingsData } = await db
+        .from("utility_settings")
+        .select("default_deposit")
+        .limit(1)
+        .single();
+      if (settingsData && settingsData.default_deposit != null) {
+        document.getElementById("depositAmount").value = settingsData.default_deposit;
+      }
+    }
+
+    initPage();
+  </script>
+  
+</body>
+</html>
+
+
+
+
